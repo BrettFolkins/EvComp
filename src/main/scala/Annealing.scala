@@ -1,11 +1,11 @@
 package com
 
-object HillClimb{
+object Annealing{
     def T(t: Double): Double = { //time curve
-
+        0.0
     }
     def bypass(d:Float, t: Double): Boolean = {
-
+        true
     }
     def calc(space: SolnSpace, maxTrials: Int): Seq[Float] = {
         val scores = Array.ofDim[Float](maxTrials)
