@@ -4,8 +4,13 @@ import com.graph._
 import swing._
 
 object App extends SimpleSwingApplication{
-    val runs = for(x <- 1 to 10) yield {
-        val run = HillClimb.calc(new Spherical(), 1000)
+
+    //number of trials
+
+    val runs = for(x <- (1 to 20).par) yield {
+        //val run = HillClimb(()=>Sphere.randomSolution(30, 0.06f), 1000)
+        val run = Annealing( ()=> Schwefel.randomSolution(30, 5f),
+                             1000000, 100);
         new DataSource(){
             val getName = x.toString
             def get(X: Double): Double = {
@@ -13,7 +18,7 @@ object App extends SimpleSwingApplication{
                 run(index).toDouble
             }
         }
-    }
+    }.seq
 
     def top = new MainFrame{
         title = "Optimizer"

@@ -1,18 +1,13 @@
 package com
 
 object HillClimb{
-    def calc(space: SolnSpace, maxTrials: Int): Seq[Float] = {
-        val scores = Array.ofDim[Float](maxTrials)
-        var sol = space.randomSol()
-        var fit = space.fitness(sol)
-        for(i <- 0 until maxTrials) {
-            var next = space.mutate(sol)
-            var nfit = space.fitness(next)
-            if(nfit < fit){
-                sol = next
-                fit = nfit
-            }
-            scores(i) = fit
+    def apply(init: ()=>Solution, trials: Int): Seq[Double] = {
+        val scores = Array.ofDim[Double](trials)
+        var sol = init()
+        for(i <- 0 until trials) {
+            val next = sol.mutate()
+            if(next.fitness < sol.fitness) sol = next
+            scores(i) = sol.fitness
         }
         scores
     }

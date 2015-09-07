@@ -1,24 +1,26 @@
 package com
 
+import scala.util.Random
+
 object Annealing{
-    def T(t: Double): Double = { //time curve
-        0.0
+    val rand = new Random()
+
+    def bypass(d: Double, t: Double): Boolean = {
+        val prob = Math.exp(-d/t)
+        val rnd = rand.nextFloat()
+        return rand.nextFloat() < prob;
     }
-    def bypass(d:Float, t: Double): Boolean = {
-        true
-    }
-    def calc(space: SolnSpace, maxTrials: Int): Seq[Float] = {
-        val scores = Array.ofDim[Float](maxTrials)
-        var sol = space.randomSol()
-        var fit = space.fitness(sol)
-        for(i <- 0 until maxTrials) {
-            var next = space.mutate(sol)
-            var nfit = space.fitness(next)
-            if(nfit < fit || bypass(fit-nfit,T(i.toDouble/maxTrials)) ){
+
+    def apply(init: ()=>Solution, trials: Int, Tmax: Float): Seq[Double] = {
+        def T(i: Int) = Tmax * (trials - i).toFloat / trials.toFloat
+        val scores = Array.ofDim[Double](trials)
+        var sol = init()
+        for(i <- 0 until trials) {
+            val next = sol.mutate()
+            val diff = next.fitness - sol.fitness
+            if(diff < 0 || bypass(diff, T(i)))
                 sol = next
-                fit = nfit
-            }
-            scores(i) = fit
+            scores(i) = sol.fitness
         }
         scores
     }

@@ -2,15 +2,20 @@ package com
 
 import scala.util.Random
 
-class Spherical extends SolnSpace {
-    val dim = 30
-    val rand = new Random()
-    type Solution = Array[Float]
-    def randomVal() = (rand.nextFloat()*10.24f) - 5.12f
-    def randomSol(): Solution = Array.fill[Float](dim)(randomVal())
-    def fitness(s: Solution): Float = s.map(x => x*x).reduce(_+_)
-    def mutate(s: Solution): Solution = {
-        def gauss() = (rand nextGaussian).toFloat*0.0512f;
-        s.map(x => x+gauss())
+class Sphere protected (genome: Array[Float], sdv: Float) extends Solution {
+    lazy val fitness = genome.map(x => x*x).reduce(_+_).toDouble
+    def gauss() = (Sphere.rand nextGaussian).toFloat * sdv
+    def mutate(): Solution = new Sphere(genome.map(x => x+gauss()), sdv)
+    def crossover(other: Solution): (Solution, Solution) = {
+        //fill this in later
+        (new Sphere(Array(), sdv), new Sphere(Array(),sdv))
+    }
+}
+
+object Sphere {
+    private val rand = new Random()
+    private def randomVal() = (rand.nextFloat()*10.24f) - 5.12f
+    def randomSolution(dim: Int, sdv: Float) = {
+        new Sphere(Array.fill[Float](dim)(randomVal()), sdv)
     }
 }
