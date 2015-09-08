@@ -11,7 +11,7 @@ object Annealing{
         return rand.nextFloat() < prob;
     }
 
-    def apply(init: ()=>Solution, trials: Int, Tmax: Float): Seq[Double] = {
+    def apply(init: ()=>Solution, trials: Int, Tmax: Float): (Seq[Double], Solution) = {
         def T(i: Int) = Tmax * (trials - i).toFloat / trials.toFloat
         val scores = Array.ofDim[Double](trials)
         var sol = init()
@@ -22,6 +22,6 @@ object Annealing{
                 sol = next
             scores(i) = sol.fitness
         }
-        scores
+        (scores, sol)
     }
 }

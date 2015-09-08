@@ -1,0 +1,72 @@
+hill climb
+    The hill climb algorithm looks to iteravly find the best solutions by
+    repeatedly mutating its best know solution to a problem
+
+    answer is an array of 30 single precision floating point numbers
+
+annealing
+
+
+spherical results
+    30 dimension
+    mutation sdv of 0.06 (chosen empirically)
+    gaussian value applied to all axis during mutation
+    random start within range -5.12,5.12
+
+Hill Climb:
+    1000 iterations
+    list of 10 run final fitnesses:
+    0.1623, 0.2021
+    0.2030, 0.2193
+    0.2221, 0.2452
+    0.2900, 0.3172
+    0.3466, 0.4036
+    best run @ 0.1623 final fitness
+        [0.021008542,0.12603578,-0.010277115,0.020816863,0.020683773,-0.0064520463,0.0024628043,-0.102311134,0.07125354,0.030399054,0.16709659,0.028362837,0.13890308,-0.076176725,0.07459973,-0.010026464,-0.020754308,-0.040275674,0.14956793,0.05280558,0.015566114,0.06293425,-0.060725227,-0.10285492,-0.011476934,-0.13000527,0.07586457,0.018997923,0.009270627,0.0107951835]
+Annealing:
+    1000 iterations
+    max temperature of 2
+    list of 10 final runs:
+    1.661, 2.144
+    2.868, 3.139
+    4.633, 4.805
+    7.183, 12.23
+    13.24, 14.50
+        [0.28513902,0.35048205,0.08644186,0.0253883,-0.37675422,0.2083194,-0.11243309,-0.031531252,0.10740294,0.21867035,-0.052955493,-0.30642843,0.11581266,0.38575947,-0.35308528,0.024093002,0.2829939,-0.12989213,-0.10192863,0.043293677,0.04585073,0.19401705,-0.0768086,0.28473613,0.08908937,-0.23212904,-0.57859373,0.33772922,0.23826085,0.05383708]
+
+schwefel
+    30 dimension
+    mutation sdv of 5.0 (chosen empirically)
+    gaussian value applied to all axis during mutation
+    random start within range -512.03, 511.97
+    mutations outside of range were bounded to the range limit
+
+Hill Climb:
+    1000 iterations
+    best of 10 runs:
+    Fitness: 4746.527039062499
+        [301.48346,-203.0956,-420.2871,303.2799,-425.34137,295.5043,-62.701347,-63.10016,289.3086,511.97,-412.8735,133.03435,-431.86578,4.815338,511.97,-427.0065,-416.11487,-204.18727,304.0797,511.97,142.50871,294.794,-419.5144,300.15317,511.97,511.13257,29.505241,305.65735,298.6147,-1.6714789]
+    6 values near the optimum -420.9
+    list of all fitnesses:
+    4746, 5048
+    5269, 5356
+    5520, 5595
+    5848, 5919
+    6233, 7585
+Annealing:
+    Fitness: 1316.8463749999992
+        [-419.37662,-416.63672,-420.21198,-419.26755,-425.91058,-417.9976,-423.00702,511.97,-420.52036,305.91458,-419.83926,511.97,-418.11017,299.78415,304.30728,-428.12057,-420.82385,-417.2412,-418.46426,307.25357,-428.16623,-414.48557,511.97,-420.33102,-412.43637,-424.7417,511.97,300.92108,-422.45602,-202.41588]
+    max temp: 200
+    1500000 iterations
+    best of 10 runs was selected
+    ten fitnesses were:
+    1316, 1333
+    1592, 1605
+    1619, 1790
+    1888, 2074
+    2232, 2342
+    values very near the optimum of -420.9 on 20/30 axis
+    too high of a temperature causes the values to randomly jump and not converge on a minumum until it has cooled
+
+------------
+

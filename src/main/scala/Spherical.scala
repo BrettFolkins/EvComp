@@ -10,6 +10,7 @@ class Sphere protected (genome: Array[Float], sdv: Float) extends Solution {
         //fill this in later
         (new Sphere(Array(), sdv), new Sphere(Array(),sdv))
     }
+    override def toString() = genome.mkString("[",",","]")
 }
 
 object Sphere {

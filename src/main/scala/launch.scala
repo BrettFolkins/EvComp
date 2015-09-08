@@ -7,10 +7,13 @@ object App extends SimpleSwingApplication{
 
     //number of trials
 
-    val runs = for(x <- (1 to 20).par) yield {
+    val runs = (for(x <- (1 to 10).par) yield {
         //val run = HillClimb(()=>Sphere.randomSolution(30, 0.06f), 1000)
-        val run = Annealing( ()=> Schwefel.randomSolution(30, 5f),
-                             1000000, 100);
+        val (run, best) = Annealing( ()=>Sphere.randomSolution(30, 0.06f), 1000, 2);
+
+        println("Fitness: " + best.fitness)
+        println("\t"+best.toString)
+
         new DataSource(){
             val getName = x.toString
             def get(X: Double): Double = {
@@ -18,7 +21,7 @@ object App extends SimpleSwingApplication{
                 run(index).toDouble
             }
         }
-    }.seq
+    }).seq
 
     def top = new MainFrame{
         title = "Optimizer"
