@@ -1,22 +1,29 @@
 package com
 
 import scala.util.Random
+import Math._
 
-class Schwefel protected (genome: Array[Float], sdv: Float) extends Solution {
-    def schwef(v: Float): Float = v*(Math.sin(Math.sqrt(Math.abs(v))).toFloat)
-    lazy val fitness = 418.9829*genome.size + genome.map(schwef(_)).reduce(_+_)
-    def mutate(): Solution = {
-        def bound(min: Float, v: Float, max: Float) = Math.min(max, Math.max(v,min))
-        def gauss() = (Schwefel.rand nextGaussian).toFloat * sdv
-        val rawGenome = genome.map(x => x+gauss())
-        val newGenome = rawGenome.map(x => bound(-512.03f, x, 511.97f))
-        new Schwefel(newGenome, sdv)
+class Schwefel protected (dna: Array[Float], sdv: Float) extends Solution[Schwefel] {
+    lazy val fitness =
+      418.9829*dna.size + dna.map(schwef(_)).reduce(_+_)
+
+    def schwef(v: Float): Float =
+      v*(sin(sqrt(abs(v))).toFloat)
+
+    def mutate(): Schwefel = {
+        def mute(v: Float): Float = {
+            val tmp = v + ((Schwefel.rand nextGaussian).toFloat * sdv)
+            min(511.97, max(tmp,-512.03)).toFloat
+        }
+        new Schwefel(dna.map(mute _), sdv)
     }
-    def crossover(other: Solution): (Solution, Solution) = {
+
+    def crossover(other: Schwefel): (Schwefel, Schwefel) = {
         //fill this in later
         (new Schwefel(Array(), sdv), new Schwefel(Array(),sdv))
     }
-    override def toString() = genome.mkString("[",",","]")
+
+    override def toString() = dna.mkString("[",",","]")
 }
 
 object Schwefel {

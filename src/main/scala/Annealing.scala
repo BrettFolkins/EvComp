@@ -2,23 +2,25 @@ package com
 
 import scala.util.Random
 
-object Annealing{
+class Annealing(
+    trials: Int,
+    Tmax: Float)
+  extends Optimizer{
     val rand = new Random()
 
-    def bypass(d: Double, t: Double): Boolean = {
-        val prob = Math.exp(-d/t)
-        val rnd = rand.nextFloat()
-        return rand.nextFloat() < prob;
-    }
-
-    def apply(init: ()=>Solution, trials: Int, Tmax: Float): (Seq[Double], Solution) = {
-        def T(i: Int) = Tmax * (trials - i).toFloat / trials.toFloat
+    def apply[T <: Solution[T]] (gen: ()=>T): (Seq[Double], T) = {
+        def bypass(d: Double, i: Int): Boolean = {
+            val temp = Tmax * (trials - i).toFloat / trials.toFloat
+            val prob = Math.exp(-d/temp)
+            val rnd = rand.nextFloat()
+            return rand.nextFloat() < prob;
+        }
         val scores = Array.ofDim[Double](trials)
-        var sol = init()
+        var sol = gen()
         for(i <- 0 until trials) {
             val next = sol.mutate()
             val diff = next.fitness - sol.fitness
-            if(diff < 0 || bypass(diff, T(i)))
+            if(diff < 0 || bypass(diff, i))
                 sol = next
             scores(i) = sol.fitness
         }

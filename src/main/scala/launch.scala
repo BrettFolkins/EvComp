@@ -5,14 +5,9 @@ import swing._
 
 object App extends SimpleSwingApplication{
 
-    //number of trials
-
-    val runs = (for(x <- (1 to 10).par) yield {
-        //val run = HillClimb(()=>Sphere.randomSolution(30, 0.06f), 1000)
-        val (run, best) = Annealing( ()=>Sphere.randomSolution(30, 0.06f), 1000, 2);
-
-        println("Fitness: " + best.fitness)
-        println("\t"+best.toString)
+    val runs = (for(x <- (1 to 1).par) yield {
+        val optimizer = new Annealing(1000000, 200)
+        val (run, best) = optimizer(()=>Schwefel.randomSolution(30, 5.0f))
 
         new DataSource(){
             val getName = x.toString

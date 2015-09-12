@@ -1,7 +1,7 @@
 package com
 
-trait Solution {
+trait Solution[T <: Solution[T]] {
     val fitness: Double
-    def mutate(): Solution
-    def crossover(other: Solution): (Solution, Solution)
+    def mutate(): T
+    def crossover(other: T): (T, T)
 }

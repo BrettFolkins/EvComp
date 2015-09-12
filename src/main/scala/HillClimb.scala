@@ -1,9 +1,9 @@
 package com
 
-object HillClimb{
-    def apply(init: ()=>Solution, trials: Int): (Seq[Double], Solution) = {
+class HillClimb(trials: Int) extends Optimizer {
+    def apply[T <: Solution[T]] (gen: ()=>T): (Seq[Double], T) = {
         val scores = Array.ofDim[Double](trials)
-        var sol = init()
+        var sol = gen()
         for(i <- 0 until trials) {
             val next = sol.mutate()
             if(next.fitness < sol.fitness) sol = next
