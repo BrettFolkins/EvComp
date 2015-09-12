@@ -12,8 +12,7 @@ class Annealing(
         def bypass(d: Double, i: Int): Boolean = {
             val temp = Tmax * (trials - i).toFloat / trials.toFloat
             val prob = Math.exp(-d/temp)
-            val rnd = rand.nextFloat()
-            return rand.nextFloat() < prob;
+            return rand.nextFloat() < prob; // 0 <= nextFloat <= 1
         }
         val scores = Array.ofDim[Double](trials)
         var sol = gen()

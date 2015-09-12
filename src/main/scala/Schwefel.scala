@@ -5,7 +5,7 @@ import Math._
 
 class Schwefel protected (dna: Array[Float], sdv: Float) extends Solution[Schwefel] {
     lazy val fitness =
-      418.9829*dna.size + dna.map(schwef(_)).reduce(_+_)
+      418.9829*dna.size + dna.map(schwef _).reduce(_+_)
 
     def schwef(v: Float): Float =
       v*(sin(sqrt(abs(v))).toFloat)
