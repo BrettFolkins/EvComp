@@ -20,7 +20,7 @@ class Schwefel protected (dna: Array[Float], sdv: Float) extends Solution[Schwef
 
     def crossover(other: Schwefel): (Schwefel, Schwefel) = {
         //fill this in later
-        (new Schwefel(Array(), sdv), new Schwefel(Array(),sdv))
+        (this, other)
     }
 
     override def toString() = dna.mkString("[",",","]")

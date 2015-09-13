@@ -11,7 +11,7 @@ class Sphere protected (dna: Array[Float], sdv: Float) extends Solution[Sphere]{
 
     def crossover(other: Sphere): (Sphere, Sphere) = {
         //fill this in later
-        (new Sphere(Array(), sdv), new Sphere(Array(),sdv))
+        (this, other)
     }
 
     override def toString() = dna.mkString("[",",","]")
