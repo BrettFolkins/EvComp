@@ -8,14 +8,14 @@ class Annealing(
   extends Optimizer{
     val rand = new Random()
 
-    def apply[T <: Solution[T]] (gen: ()=>T): (Seq[Double], T) = {
+    def apply(p: Problem): (Seq[Double], p.SolutionType) = {
         def bypass(d: Double, i: Int): Boolean = {
             val temp = Tmax * (trials - i).toFloat / trials.toFloat
             val prob = Math.exp(-d/temp)
             return rand.nextFloat() < prob; // 0 <= nextFloat <= 1
         }
         val scores = Array.ofDim[Double](trials)
-        var sol = gen()
+        var sol = p.potential()
         for(i <- 0 until trials) {
             val next = sol.mutate()
             val diff = next.fitness - sol.fitness

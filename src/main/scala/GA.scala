@@ -8,16 +8,16 @@ class GA (popSize: Int, genMax: Int, tSize: Int) extends Optimizer {
     var averages : Array[Double] = null;
     var bests    : Array[Double] = null;
 
-    def apply[T <: Solution[T]] (Factory: ()=>T): (Seq[Double], T) = {
+    def apply(p: Problem): (Seq[Double], p.SolutionType) = {
         averages = Array.ofDim[Double](genMax)
         bests    = Array.ofDim[Double](genMax)
 
-        var pop = for(x <- 1 to popSize) yield Factory()
+        var pop = for(x <- 1 to popSize) yield p.potential()
 
         for(i <- 0 until genMax){
             pop = (1 to popSize by 2).flatMap { x=>
-                val parentA : T = tournament(pop, tSize)(MinOrd)
-                val parentB : T = tournament(pop, tSize)(MinOrd)
+                val parentA = tournament(pop, tSize)(MinOrd)
+                val parentB = tournament(pop, tSize)(MinOrd)
                 val (childA, childB) = parentA.crossover(parentB)
                 List(childA.mutate(), childB.mutate())
             }
@@ -29,7 +29,6 @@ class GA (popSize: Int, genMax: Int, tSize: Int) extends Optimizer {
 
         (averages, pop.max(MinOrd))
     }
-
     /**
      * Takes a random sampling of `num` elements from `xs` with replacement
      * Returns a new collection of the same type as `xs` whenever possible

@@ -21,7 +21,10 @@ object Sphere {
     private val rand = new Random()
     private def randomVal() = (rand.nextFloat()*10.24f) - 5.12f
 
-    def randomSolution(dim: Int, sdv: Float) = {
-        new Sphere(Array.fill[Float](dim)(randomVal()), sdv)
+    def apply(dimension:Int = 30, sdv:Float = 0.05f) = new Problem {
+        override type SolutionType = Sphere
+        def potential() : SolutionType = {
+            new Sphere(Array.fill[Float](dimension)(randomVal()), sdv)
+        }
     }
 }

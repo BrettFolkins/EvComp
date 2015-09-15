@@ -19,7 +19,7 @@ object App extends SimpleSwingApplication{
     }).seq*/
 
     val optimizer = new GA(50, 250, 3)
-    val (_, best) = optimizer(()=>Sphere.randomSolution(30, 0.06f))
+    val (_, best) = optimizer(Sphere())
 
     val runs = List(
         new DataSource(){

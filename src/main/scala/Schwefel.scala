@@ -29,7 +29,11 @@ class Schwefel protected (dna: Array[Float], sdv: Float) extends Solution[Schwef
 object Schwefel {
     private val rand = new Random()
     private def randomVal() = (rand.nextFloat()*1020f) - 510f
-    def randomSolution(dim: Int, sdv: Float) = { //5.1
-        new Schwefel(Array.fill[Float](dim)(randomVal()), sdv)
+
+    def apply(dimension:Int = 30, sdv:Float = 5.0f) = new Problem {
+        override type SolutionType = Schwefel
+        def potential() : SolutionType = {
+            new Schwefel(Array.fill[Float](dimension)(randomVal()), sdv)
+        }
     }
 }

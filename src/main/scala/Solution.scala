@@ -5,3 +5,8 @@ trait Solution[T <: Solution[T]] {
     def mutate(): T
     def crossover(other: T): (T, T)
 }
+
+trait Problem {
+    type SolutionType <: Solution[SolutionType]
+    def potential() : SolutionType
+}
