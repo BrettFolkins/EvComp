@@ -5,41 +5,21 @@ import swing._
 
 object App extends SimpleSwingApplication{
 
-/*    val runs = (for(x <- (1 to 1).par) yield {
-        val optimizer = new Annealing(1000000, 200)
-        val (run, best) = optimizer(()=>Schwefel.randomSolution(30, 5.0f))
+    val problems  = List(Sphere(), Schwefel())
+    val optimizer = new GA(50,250,3)
 
-        new DataSource(){
-            val getName = x.toString
-            def get(X: Double): Double = {
-                val index :Int = (X*run.size.toDouble).toInt
-                run(index).toDouble
-            }
+    val runs = problems map { p =>
+        val (averages, best) = optimizer(p)
+        new ArrayDataSource(p+" Average", averages)
+    }
+
+    class ArrayDataSource(name: String, data:Seq[Double]) extends DataSource{
+        val getName = name
+        def get(X: Double): Double = {
+            val index :Int = (X*data.size.toDouble).toInt
+            data(index).toDouble
         }
-    }).seq*/
-
-    val optimizer = new GA(50, 250, 3)
-    val (_, best) = optimizer(Sphere())
-
-    val runs = List(
-        new DataSource(){
-            val getName = "Average"
-            def get(X: Double): Double = {
-                val index :Int = (X*optimizer.averages.size.toDouble).toInt
-                optimizer.averages(index).toDouble
-            }
-        },
-        new DataSource(){
-            val getName = "Best"
-            def get(X: Double): Double = {
-                val index :Int = (X*optimizer.bests.size.toDouble).toInt
-                optimizer.bests(index).toDouble
-            }
-        }
-    )
-
-    println(runs.size)
-
+    }
     def top = new MainFrame{
         title = "Optimizer"
         val aL = new java.util.ArrayList[DataSource]()
