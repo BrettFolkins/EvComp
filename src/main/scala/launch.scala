@@ -6,7 +6,7 @@ import swing._
 object App extends SimpleSwingApplication{
 
     val problems  = List(Sphere(), Schwefel())
-    val optimizer = new GA(50,250,3)
+    val optimizer = new GA(popSize = 50, genMax = 250)
 
     val runs = problems map { p =>
         val (averages, best) = optimizer(p)

@@ -4,7 +4,11 @@ import scala.collection.generic.CanBuildFrom
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 
-class GA (popSize: Int, genMax: Int, tSize: Int) extends Optimizer {
+class GA (
+    popSize: Int = 100,
+    genMax: Int = 100,
+    tournamentSize: Int = 3
+  ) extends Optimizer {
 
     def apply(p: Problem): (Seq[Double], p.SolutionType) = {
         val averages = Array.ofDim[Double](genMax)
@@ -14,8 +18,8 @@ class GA (popSize: Int, genMax: Int, tSize: Int) extends Optimizer {
 
         for(i <- 0 until genMax){
             pop = (1 to popSize by 2).flatMap { x=>
-                val parentA = tournament(pop, tSize)(MinOrd)
-                val parentB = tournament(pop, tSize)(MinOrd)
+                val parentA = tournament(pop, tournamentSize)(MinOrd)
+                val parentB = tournament(pop, tournamentSize)(MinOrd)
                 val (childA, childB) = parentA.crossover(parentB)
                 List(childA.mutate(), childB.mutate())
             }
