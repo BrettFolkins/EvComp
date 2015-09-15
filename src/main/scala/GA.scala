@@ -5,12 +5,10 @@ import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 
 class GA (popSize: Int, genMax: Int, tSize: Int) extends Optimizer {
-    var averages : Array[Double] = null;
-    var bests    : Array[Double] = null;
 
     def apply(p: Problem): (Seq[Double], p.SolutionType) = {
-        averages = Array.ofDim[Double](genMax)
-        bests    = Array.ofDim[Double](genMax)
+        val averages = Array.ofDim[Double](genMax)
+        //val bests    = Array.ofDim[Double](genMax)
 
         var pop = for(x <- 1 to popSize) yield p.potential()
 
@@ -24,11 +22,12 @@ class GA (popSize: Int, genMax: Int, tSize: Int) extends Optimizer {
 
             //log average population fitness
             averages(i) = pop.foldLeft(0.0)(_ + _.fitness) / pop.size.toDouble
-            bests(i)    = pop.max(MinOrd).fitness
+            // bests(i)    = pop.max(MinOrd).fitness
         }
 
         (averages, pop.max(MinOrd))
     }
+
     /**
      * Takes a random sampling of `num` elements from `xs` with replacement
      * Returns a new collection of the same type as `xs` whenever possible
