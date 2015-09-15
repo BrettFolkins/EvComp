@@ -35,5 +35,6 @@ object Schwefel {
         def potential() : SolutionType = {
             new Schwefel(Array.fill[Float](dimension)(randomVal()), sdv)
         }
+        override def toString = "Schwefel, dim="+dimension+", sdv="+sdv
     }
 }

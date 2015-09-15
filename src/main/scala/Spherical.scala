@@ -26,5 +26,6 @@ object Sphere {
         def potential() : SolutionType = {
             new Sphere(Array.fill[Float](dimension)(randomVal()), sdv)
         }
+        override def toString = "Sphereical, dim="+dimension+", sdv="+sdv
     }
 }
