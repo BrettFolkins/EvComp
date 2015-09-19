@@ -25,4 +25,6 @@ class Annealing(
         }
         (scores, sol)
     }
+
+    override def toString() = "Annealing"
 }

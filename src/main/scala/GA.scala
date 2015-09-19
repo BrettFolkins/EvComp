@@ -34,6 +34,8 @@ class GA (
         (averages, pop.max(MinOrd))
     }
 
+    override def toString() = "GA"
+
     /**
      * Takes a random sampling of `num` elements from `xs` with replacement
      * Returns a new collection of the same type as `xs` whenever possible

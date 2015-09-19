@@ -11,4 +11,6 @@ class HillClimb(trials: Int) extends Optimizer {
         }
         (scores, sol)
     }
+
+    override def toString() = "Hill Climb"
 }
