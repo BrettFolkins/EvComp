@@ -38,18 +38,22 @@ object Rastrigin extends RealSeqFunction("Rastrigin", -5.12f, 5.12f, 30, new RSF
 
 object Ackley extends RealSeqFunction("Ackley", -30.0f, 30.0f, 30, new RSFitness(){
     def apply(dna: Seq[Float]) : Double = {
-        val a = dna.map(x => x*x).reduce(_+_).toDouble / dna.size.toDouble
-        val b = dna.map(x => cos(2*PI*x)).reduce(_+_) / dna.size.toDouble
-        20.0 + E - 20*exp(-0.2*sqrt(a)) - exp(b)
+        val p = dna.size.toDouble
+        val a = dna.map(x => x*x).reduce(_+_).toDouble / p
+        val b = dna.map(x => cos(2*PI*x)).reduce(_+_) / p
+        20.0 + E - 20.0*exp(-0.2*sqrt(a)) - exp(b)
     }
 })
 
 object Griewangk extends RealSeqFunction("Griewangk", -600f, 600f, 30, new RSFitness(){
     def apply(dna: Seq[Float]) : Double = {
-        val a = dna.map(x => x*x/4000).reduce(_+_).toDouble
-        val b = dna.zipWithIndex.map {case (v, i) =>
-            cos(v.toDouble/sqrt(i))
-        }.reduce(_*_)
+        val a = dna map { x=>
+            val y = x.toDouble
+            x*x/4000.0
+        } reduce(_+_)
+        val b = dna.zipWithIndex map {case (v, i) =>
+            cos(v.toDouble/sqrt(i+1.0))
+        } reduce(_*_)
         1.0 + a - b
     }
 })
