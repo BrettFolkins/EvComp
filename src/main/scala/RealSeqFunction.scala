@@ -13,9 +13,9 @@ trait RSFitness {
 }
 
 class gaussMutate(sdv: Float) extends RSMutate{
+    val rand = new Random()
     def apply(dna: Seq[Float], min: Float, max: Float): Seq[Float] = {
         def m(v: Float): Float = {
-            val rand = new Random()
             val tmp = v + ((rand nextGaussian).toFloat * sdv)
             Math.min(max, Math.max(tmp, min)).toFloat
         }
@@ -42,7 +42,7 @@ class RealSeqFunction(name: String, min: Float, max: Float, dim: Int, fitFunc: R
 
         val rand = new Random()
         def validRand(): Float = (rand.nextFloat() * (max-min)) + (min)
-        def initial(): Seq[Float] = Seq.fill[Float](dim)(validRand())
+        def initial(): Seq[Float] = Array.fill[Float](dim)(validRand())
 
         new Problem {
             type SolutionType = RSSolution
