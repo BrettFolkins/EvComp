@@ -3,17 +3,17 @@ package com
 import scala.util.Random
 
 trait RSMutate {
-    def apply(dna: Array[Float], min: Float, max: Float): Array[Float]
+    def apply(dna: Seq[Float], min: Float, max: Float): Seq[Float]
 }
 trait RSCrossover {
-    def apply(a: Array[Float], b: Array[Float]): (Array[Float], Array[Float])
+    def apply(a: Seq[Float], b: Seq[Float]): (Seq[Float], Seq[Float])
 }
 trait RSFitness {
-    def apply(dna: Array[Float]) : Double
+    def apply(dna: Seq[Float]) : Double
 }
 
 class gaussMutate(sdv: Float) extends RSMutate{
-    def apply(dna: Array[Float], min: Float, max: Float): Array[Float] = {
+    def apply(dna: Seq[Float], min: Float, max: Float): Seq[Float] = {
         def m(v: Float): Float = {
             val rand = new Random()
             val tmp = v + ((rand nextGaussian).toFloat * sdv)
@@ -24,13 +24,13 @@ class gaussMutate(sdv: Float) extends RSMutate{
 }
 
 class nullCrossover() extends RSCrossover{
-    def apply(a: Array[Float], b: Array[Float]): (Array[Float], Array[Float]) =
+    def apply(a: Seq[Float], b: Seq[Float]): (Seq[Float], Seq[Float]) =
         (a,b)
 }
 
 class RealSeqFunction(name: String, min: Float, max: Float, dim: Int, fitFunc: RSFitness){
     def apply(mutator: RSMutate, crossFunc: RSCrossover) : Problem = {
-        class RSSolution(val dna: Array[Float]) extends Solution[RSSolution] {
+        class RSSolution(val dna: Seq[Float]) extends Solution[RSSolution] {
             val fitness = fitFunc(dna)
             def mutate() = new RSSolution(mutator(dna, min, max))
             def crossover(other: RSSolution) = {
@@ -42,7 +42,7 @@ class RealSeqFunction(name: String, min: Float, max: Float, dim: Int, fitFunc: R
 
         val rand = new Random()
         def validRand(): Float = (rand.nextFloat() * (max-min)) + (min)
-        def initial(): Array[Float] = Array.fill[Float](dim)(validRand())
+        def initial(): Seq[Float] = Seq.fill[Float](dim)(validRand())
 
         new Problem {
             type SolutionType = RSSolution
