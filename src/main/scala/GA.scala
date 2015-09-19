@@ -14,15 +14,17 @@ class GA (
         val averages = Array.ofDim[Double](genMax)
         //val bests    = Array.ofDim[Double](genMax)
 
-        var pop = for(x <- 1 to popSize) yield p.potential()
+        var pop: Seq[p.SolutionType] = for(x <- 1 to popSize) yield p.potential()
 
         for(i <- 0 until genMax){
-            pop = (1 to popSize by 2).flatMap { x=>
+            val tmp = (1 to popSize by 2).par map { x=>
                 val parentA = tournament(pop, tournamentSize)(MinOrd)
                 val parentB = tournament(pop, tournamentSize)(MinOrd)
                 val (childA, childB) = parentA.crossover(parentB)
                 List(childA.mutate(), childB.mutate())
             }
+
+            pop = tmp.seq.flatten
 
             //log average population fitness
             averages(i) = pop.foldLeft(0.0)(_ + _.fitness) / pop.size.toDouble
