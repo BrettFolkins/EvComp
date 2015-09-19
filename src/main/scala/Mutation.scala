@@ -6,7 +6,7 @@ trait RSMutate {
     def apply(dna: Seq[Float], min: Float, max: Float): Seq[Float]
 }
 
-class gaussMutate(sdv: Float) extends RSMutate{
+class GaussMutate(sdv: Float) extends RSMutate{
     val rand = new Random()
     def apply(dna: Seq[Float], min: Float, max: Float): Seq[Float] = {
         def m(v: Float): Float = {
