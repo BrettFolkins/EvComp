@@ -5,16 +5,20 @@ import swing._
 
 object App extends SimpleSwingApplication{
 
-    val mutator   = new gaussMutate(0.05f)
+    val mutator   = new gaussMutate(5.0f)
     val crosser   = new nullCrossover()
-    val problems  = List(Sphere,Schwefel,Rosenbrock,Rastrigin,Ackley,Griewangk)
-    val optimizer = new GA(popSize = 50, genMax = 250)
+    val problems  = List(Schwefel)//Sphere,Schwefel,Rosenbrock,Rastrigin,Ackley,Griewangk)
+    val optimizer = new Annealing(1000000, 200) //GA(popSize = 50, genMax = 20)
 
+    val t0 = System.currentTimeMillis()
     val runs = problems map { p =>
         val problem = p(mutator, crosser)
         val (averages, best) = optimizer(problem)
+        //println(problem + ": " + averages)
         new ArrayDataSource(problem+" Average", averages)
     }
+    val t1 = System.currentTimeMillis()
+    println("Elapsed time: " + (t1 - t0)/1000 + "s")
 
     class ArrayDataSource(name: String, data:Seq[Double]) extends DataSource{
         val getName = name
