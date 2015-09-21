@@ -16,3 +16,18 @@ class GaussMutate(sdv: Float) extends RSMutate{
         dna.map(m(_))
     }
 }
+
+class SelectiveMutate(mutateChance: Float, sdv: Float) extends RSMutate{
+    val rand = new Random()
+    def apply(dna: Seq[Float], min: Float, max: Float): Seq[Float] = {
+        def m(v: Float): Float = {
+            if(rand.nextFloat < mutateChance){
+                val tmp = v + ((rand nextGaussian).toFloat * sdv)
+                Math.min(max, Math.max(tmp, min)).toFloat
+            } else {
+                v
+            }
+        }
+        dna.map(m(_))
+    }
+}

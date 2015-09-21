@@ -6,7 +6,12 @@ trait RSFitness {
     def apply(dna: Seq[Float]) : Double
 }
 
-class RealSeqFunction(name: String, min: Float, max: Float, dim: Int, fitFunc: RSFitness){
+class RealSeqFunction(
+  name: String,
+  val min: Float,
+  val max: Float,
+  dim: Int,
+  fitFunc: RSFitness){
     def apply(mutator: RSMutate, crossFunc: RSCrossover) : Problem = {
         class RSSolution(val dna: Seq[Float]) extends Solution[RSSolution] {
             val fitness = fitFunc(dna)

@@ -5,20 +5,47 @@ import swing._
 
 object App extends SimpleSwingApplication{
 
-    val mutator    = new gaussMutate(0.01f)
-    val crosser    = new twoPointCrossover()
+    //val mutator    = new GaussMutate(0.025f)
+    //val crosser    = new ArithmeticCrossover(1.0f)
     //val problems   = List(Sphere,Schwefel,Rosenbrock,Rastrigin,Ackley,Griewangk)
-    val problems   = List(Rosenbrock, Ackley)
-    val optimizers = List(new GA(popSize = 200, genMax = 1000, tournamentSize=3))
+    val problems   = List(Rosenbrock,Rastrigin,Ackley,Griewangk)
+    val optimizers = List(new GA(popSize = 500, genMax = 4000, tournamentSize=3))
+        /*,
+                          new Annealing(2000000,10),
+                          new HillClimb(2000000))*/
 
-    val t0 = System.currentTimeMillis()
+
+/*val t0 = System.currentTimeMillis()
+    for(p <- problems; optimizer<-optimizers) {
+        val scale   = (p.max - p.min)/200.0
+        val problem = p(new SelectiveMutate(0.05f, scale.toFloat),
+                        new TwoPointCrossover())
+
+        val results = for(x <- 1 to 10) yield {
+            val (_, best) = optimizer(problem)
+            best.fitness
+        }
+
+        val average = results.sum / results.size.toDouble
+        val best = results.min
+        println(optimizer+" on "+problem+": ")
+        println("\tavg: "+average)
+        println("\tmin: "+best)
+    }
+val t1 = System.currentTimeMillis()
+println("Elapsed time: " + (t1 - t0).toDouble/1000.0 + "s")
+*/
+
     val runs = for(p <- problems; optimizer <- optimizers) yield {
-        val problem = p(mutator, crosser)
+        val scale   = (p.max - p.min)/200.0
+        val problem = p(new SelectiveMutate(0.05f, scale.toFloat),
+                        new ArithmeticCrossover(1.0f))
         val (averages, best) = optimizer(problem)
         new ArrayDataSource(optimizer+": "+problem+" Average", averages)
     }
-    val t1 = System.currentTimeMillis()
-    println("Elapsed time: " + (t1 - t0).toDouble/1000.0 + "s")
+
+
+
 
     class ArrayDataSource(name: String, data:Seq[Double]) extends DataSource{
         val getName = name
@@ -33,4 +60,9 @@ object App extends SimpleSwingApplication{
         for(ds <- runs) aL.add(ds)
         contents = Component.wrap(new Graph(aL, true))
     }
+
+
+
+
+
 }
