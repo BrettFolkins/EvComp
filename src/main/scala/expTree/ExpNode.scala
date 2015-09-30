@@ -1,7 +1,12 @@
 package com.expTree
 
 abstract class ExpNode extends Traversable[ExpNode]{
-
+    /**
+     * This node should return a new node of the same operation, but using
+     * the iterator to get references to new child nodes
+     * what it does when there are not enough children in the iterator
+     * is up to the implementer
+     */
     def buildUsing(children: Iterator[ExpNode]): ExpNode
 
     val children: Seq[ExpNode]
