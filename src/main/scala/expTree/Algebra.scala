@@ -45,7 +45,7 @@ abstract class Algebra {
         def this() = this(0.0)
         val children = Nil
         def buildUsing(children: Iterator[ExpNode]) = Constant(randomConstantValue())
-        def eval(i: Int) = v
+        def eval(i: Any) = v
         override def toString = v + "d"
     }
 
@@ -58,7 +58,7 @@ abstract class Algebra {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 0.0
             Add(sub(), sub())
         }
-        def eval(i: Int) = l.eval(i) + r.eval(i)
+        def eval(i: Any) = l.eval(i) + r.eval(i)
         override def toString = "("+l+"+"+r+")"
     }
 
@@ -69,7 +69,7 @@ abstract class Algebra {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 1.0
             Subtract(sub(), sub())
         }
-        def eval(i: Int) = l.eval(i) - r.eval(i)
+        def eval(i: Any) = l.eval(i) - r.eval(i)
         override def toString = "("+l+"-"+r+")"
     }
 
@@ -80,7 +80,7 @@ abstract class Algebra {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 1.0
             Multiply(sub(), sub())
         }
-        def eval(i: Int) = l.eval(i) * r.eval(i)
+        def eval(i: Any) = l.eval(i) * r.eval(i)
         override def toString = "("+l+"*"+r+")"
     }
 
@@ -91,7 +91,7 @@ abstract class Algebra {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 1.0
             Divide(sub(), sub())
         }
-        def eval(i: Int) = {
+        def eval(i: Any) = {
             val reval = r.eval(i)
             val leval = l.eval(i)
             if(reval == 0) leval

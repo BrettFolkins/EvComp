@@ -39,9 +39,9 @@ abstract class ExpNode extends Traversable[ExpNode]{
     /**
      * i is passed through for use by variables
      */
-    def eval(i: Int): Double
+    def eval(i: Any): Double
 
-    def eval(): Double = eval(0)
+    def eval(): Double = eval(None)
 
     def replaceChild(cidx: Int, child: ExpNode): ExpNode =
         buildUsing(children.updated(cidx, child).iterator)
