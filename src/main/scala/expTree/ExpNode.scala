@@ -32,7 +32,7 @@ abstract class ExpNode extends Traversable[ExpNode]{
         nt+t
     }
     /**
-     * i is for passed through for use by variables
+     * i is passed through for use by variables
      */
     def eval(i: Int): Double
 
@@ -48,6 +48,12 @@ abstract class ExpNode extends Traversable[ExpNode]{
         children.foreach(c => c.foreach(op))
     }
 
+    /**
+     * Indexing below is based on preordered traversal visiting order
+     * Since size is O(1), indexing can be done O(log(n)) for arbitrarily
+     * constructed trees. Modifications create only O(log(n)) new nodes as well
+     */
+
     def pickSubtree(id: Int): Option[ExpNode] = {
         if(id == 0) return Some(this)
         def findSubtree(i: Int, cs: Seq[ExpNode]): Option[ExpNode] = {
@@ -57,6 +63,17 @@ abstract class ExpNode extends Traversable[ExpNode]{
             else findSubtree(i-total, cs.tail)
         }
         findSubtree(id-1, children)
+    }
+
+    def indexOf(n: ExpNode): Option[Int] = {
+        import scala.util.control.Breaks
+        val b = new Breaks
+        var index = 0;
+        b.breakable {
+            foreach{ x => if(x == n) b.break() else index += 1 }
+            return None
+        }
+        Some(index)
     }
 
     def modifySubtree(id: Int, nn: ExpNode=>ExpNode): ExpNode = {
@@ -86,18 +103,12 @@ abstract class ExpNode extends Traversable[ExpNode]{
         modifySubtree(id, (x: ExpNode) => nn)
     }
 
-    def indexOf(n: ExpNode): Option[Int] = {
-        import scala.util.control.Breaks
-        val b = new Breaks
-        var index = 0;
-        b.breakable {
-            foreach{ x => if(x == n) b.break() else index += 1 }
-            return None
-        }
-        Some(index)
-    }
+    /**
+     * Ideally, these would be expanded to the thouroghness of subtree selection
+     * an easy way to avoid code duplication escapes me and, well, YAGNI
+     */
 
-/*        def pickTerminal(id: Int): Option[ExpNode] = {
+    def pickTerminal(id: Int): Option[ExpNode] = {
         if(terminal){
             if(id == 0) return Some(this)
             else        return None
@@ -121,6 +132,6 @@ abstract class ExpNode extends Traversable[ExpNode]{
             else findSubtree(i-nt, cs.tail)
         }
         findSubtree(id-1, children)
-    }*/
+    }
 }
 
