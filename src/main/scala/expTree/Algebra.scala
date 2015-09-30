@@ -2,21 +2,14 @@ package com.expTree
 
 import scala.util.Random
 
-object Algebra extends Algebra {
-    val elements: Seq[ExpNode] = Array(new Constant(),
-                                       new Add(), new Subtract(),
-                                       new Multiply(), new Divide())
-
-    def randomConstantValue(): Double = rand.nextInt(10).toDouble
-}
-
 abstract class Algebra {
     val elements: Seq[ExpNode]
 
     def randomConstantValue(): Double
 
+    lazy val (terminals, nonterminals) = elements.partition(x => x.terminal)
+
     val rand = new Random()
-    val (terminals, nonterminals) = elements.partition(x => x.terminal)
 
     def randomElement[U](xs: Seq[U]): U = xs(rand.nextInt(xs.size))
 
@@ -107,4 +100,12 @@ abstract class Algebra {
         override def toString = "("+l+"/"+r+")"
     }
 
- }
+}
+
+object BasicAlgebra extends Algebra {
+    val elements: Seq[ExpNode] = Array(new Constant(),
+                                       new Add(), new Subtract(),
+                                       new Multiply(), new Divide())
+
+    def randomConstantValue(): Double = rand.nextInt(10).toDouble
+}

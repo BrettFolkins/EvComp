@@ -1,4 +1,4 @@
 :paste -raw ExpNode.scala
 import com.expTree._
 :paste -raw Algebra.scala
-import com.expTree.Algebra._
+import com.expTree.BasicAlgebra._
