@@ -12,7 +12,7 @@ package object Algebra {
     }
 
     def getRandomSubtree(tree: ExpNode): ExpNode = {
-        tree.pickSubtree(rand.nextInt(tree.size)).get
+        tree.pickSubtree(rand.nextInt(tree.size))
     }
 
     def mutateRandomNode(tree: ExpNode): ExpNode = {
@@ -22,8 +22,8 @@ package object Algebra {
     def crossoverSubtrees(left: ExpNode, right: ExpNode): (ExpNode, ExpNode) = {
         val li = rand.nextInt(left.size)
         val ri = rand.nextInt(right.size)
-        ( left.replaceSubtree(li, right.pickSubtree(ri).get),
-         right.replaceSubtree(ri,  left.pickSubtree(li).get) )
+        ( left.replaceSubtree(li, right.pickSubtree(ri)),
+         right.replaceSubtree(ri,  left.pickSubtree(li)) )
     }
 
     class TreeGenerator(height: Int) extends Iterator[ExpNode] {

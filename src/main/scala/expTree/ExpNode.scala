@@ -54,10 +54,10 @@ abstract class ExpNode extends Traversable[ExpNode]{
      * constructed trees. Modifications create only O(log(n)) new nodes as well
      */
 
-    def pickSubtree(id: Int): Option[ExpNode] = {
-        if(id == 0) return Some(this)
-        def findSubtree(i: Int, cs: Seq[ExpNode]): Option[ExpNode] = {
-            if(cs.isEmpty) return None
+    def pickSubtree(id: Int): ExpNode = {
+        if(id == 0) return this
+        def findSubtree(i: Int, cs: Seq[ExpNode]): ExpNode = {
+            if(cs.isEmpty) throw new IllegalArgumentException("Index out of bounds")
             val total = cs.head.size
             if(i < total) cs.head.pickSubtree(i)
             else findSubtree(i-total, cs.tail)
@@ -66,31 +66,21 @@ abstract class ExpNode extends Traversable[ExpNode]{
     }
 
     def indexOf(n: ExpNode): Option[Int] = {
-        import scala.util.control.Breaks
-        val b = new Breaks
         var index = 0;
-        b.breakable {
-            foreach{ x => if(x == n) b.break() else index += 1 }
-            return None
-        }
-        Some(index)
+        foreach{ x => if(x == n) return Some(index) else index += 1 }
+        None
     }
 
     def modifySubtree(id: Int, nn: ExpNode=>ExpNode): ExpNode = {
         if(id == 0) return nn(this)
-        def findSubtree(i: Int, cs: Seq[ExpNode]): (ExpNode, Int) = {
-            val total = cs.head.size
-            if(i < total) {
-                val subtree = cs.head.modifySubtree(i,nn)
-                return (subtree, 0)
-            }
-            else {
-                val (replaced, index) = findSubtree(i-total, cs.tail)
-                return (replaced, index+1)
-            }
+        def sid(rem: Int, cs: Seq[ExpNode], index: Int): (ExpNode, Int) = {
+            if(cs.isEmpty) throw new IllegalArgumentException("Index out of bounds")
+            val ns = cs.head.size
+            if(rem < ns) (cs.head.modifySubtree(rem, nn), index)
+            else sid(rem - ns, cs.tail, index + 1)
         }
-        val (replaced, index) = findSubtree(id-1, children)
-        return replaceChild(index, replaced)
+        val (child, cidx) = sid(id-1, children, 0)
+        replaceChild(cidx, child)
     }
 
     def mutateNode(id: Int, nn: ExpNode): ExpNode = {
@@ -108,13 +98,13 @@ abstract class ExpNode extends Traversable[ExpNode]{
      * an easy way to avoid code duplication escapes me and, well, YAGNI
      */
 
-    def pickTerminal(id: Int): Option[ExpNode] = {
+    def pickTerminal(id: Int): ExpNode = {
         if(terminal){
-            if(id == 0) return Some(this)
-            else        return None
+            if(id == 0) return this
+            else        throw new IllegalArgumentException("Index out of bounds")
         }
-        def findSubtree(i: Int, cs: Seq[ExpNode]): Option[ExpNode] = {
-            if(cs.isEmpty) return None
+        def findSubtree(i: Int, cs: Seq[ExpNode]): ExpNode = {
+            if(cs.isEmpty) throw new IllegalArgumentException("Index out of bounds")
             val (_, t) = cs.head.nodeCount
             if(i < t) cs.head.pickTerminal(i)
             else findSubtree(i-t, cs.tail)
@@ -122,11 +112,11 @@ abstract class ExpNode extends Traversable[ExpNode]{
         findSubtree(id, children)
     }
 
-    def pickNonTerminal(id: Int): Option[ExpNode] = {
-        if(terminal) return None
-        if(id == 0) return Some(this)
-        def findSubtree(i: Int, cs: Seq[ExpNode]): Option[ExpNode] = {
-            if(cs.isEmpty) return None
+    def pickNonTerminal(id: Int): ExpNode = {
+        if(terminal) throw new IllegalArgumentException("Nonterminal search on terminal element")
+        if(id == 0) return this
+        def findSubtree(i: Int, cs: Seq[ExpNode]): ExpNode = {
+            if(cs.isEmpty) throw new IllegalArgumentException("Index out of bounds")
             val (nt, _) = cs.head.nodeCount
             if(i < nt) cs.head.pickNonTerminal(i)
             else findSubtree(i-nt, cs.tail)
