@@ -1,134 +1,126 @@
-package com
+package com.expTree
 
-import scala.util.Random
+abstract class ExpNode extends Traversable[ExpNode]{
 
-/**
- * Put all this in an expression set, so they can all reference the sets
- * factories and bounds?
- */
+    def buildUsing(children: Iterator[ExpNode]): ExpNode
 
-package object expTree {
-    abstract class ExpNode {
-        //not sure that I like this
-        def buildUsing(children: Iterator[ExpNode]): ExpNode
+    val children: Seq[ExpNode]
 
-        val children: Seq[ExpNode]
-
-        lazy val terminal = children.isEmpty
-        /**
-         * lazy because it depends on an abstract member that will be
-         * initialized after this constructor is called
-         */
-        lazy val depth: Int = if(children.isEmpty) 1
-                              else 1 + (children map (x => x.depth)).max
-        /**
-         * lazy because it depends on an abstract member
-         * returns a pair (nonTermianls, Terminals)
-         */
-        lazy val size: (Int, Int) = {
-            if(terminal) (0, 1)
-            else children.foldLeft((1, 0)){ case (s,c) =>
-                val n = c.size
-                (s._1 + n._1, s._2 + n._2)
-            }
-        }
-        /**
-         * return the evaluated expression
-         * i is for passed through for use by variables
-         */
-        def eval(i: Int): Double
-        /**
-         * Return a node of the same model as this node, but
-         * with one child replaced
-         */
-        def replaceChild(cidx: Int, child: ExpNode): ExpNode =
-            buildUsing(children.updated(cidx, child).iterator)
-    }
-
+    def terminal = children.isEmpty
     /**
-     * Stores the information necessary to replace a node in a tree
-     * the first element is the node to be replaced
-     * the second element is the node the first element is a child of,
-     *      and the first element's index in the list of children
-     * and so on ...
+     * lazy because it depends on an abstract member that will be
+     * initialized after this constructor is called
      */
-    type treePos = List[(ExpNode, Int)]
-
-    def rebuild(tP: treePos, nn: ExpNode): ExpNode = {//build from new node and treePos
-
-    }
-
-    def getRandomPoint(node: ExpNode): ExpNode = {
-        /**
-         * call size of the node to get the total elements
-         * do the thing where one of N elements is chosen moving sequentially
-         * but for like, groups or whatever
-         */
-    }
-    //what does the implementer provide to specify random node selection minially?
-
-    class TreeGenerator(height: Int) extends Iterator[ExpNode] {
-        def hasNext = true
-        def next() = {
-            randomNode(height).buildUsing(new TreeGenerator(height-1))
+    lazy val depth: Int = if(children.isEmpty) 1
+                          else 1 + (children map (x => x.depth)).max
+    /**
+     * lazy because it depends on an abstract member
+     * returns a pair (nonTermianls, Terminals)
+     */
+    lazy val nodeCount: (Int, Int) = {
+        if(terminal) (0, 1)
+        else children.foldLeft((1, 0)){ case (s,c) =>
+            val n = c.nodeCount
+            (s._1 + n._1, s._2 + n._2)
         }
     }
+    /**
+     * Override size in Traversable to be an O(1) val
+     */
+    override lazy val size: Int = {
+        val (nt, t) = nodeCount
+        nt+t
+    }
+    /**
+     * i is for passed through for use by variables
+     */
+    def eval(i: Int): Double
 
-    //pick random terminal
-    //pick random nonterminal
-    //mutate tree
-    //crossover trees
-    //node building from nothing
+    def eval(): Double = eval(0)
 
-    //apps extend expTree, provide terminal and op set
-    //algebra set extension should come wih +,-,*,/
-
-    val nodes = Set(Constant, Add, Multiply)
-
-    val rand = new Random()
-    def randomNode(h: Int): ExpNode = { //this will be abstract
-        if(h > 1) Add(Constant(0.0),Constant(0.0))//random node
-        else Constant(rand.nextDouble)
+    def replaceChild(cidx: Int, child: ExpNode): ExpNode =
+        buildUsing(children.updated(cidx, child).iterator)
+    /**
+     * runs as Preordered traversal of the tree from left to right
+     */
+    def foreach[U](op: ExpNode=>U): Unit = {
+        op(this)
+        children.foreach(c => c.foreach(op))
     }
 
-
-
-
-    case class Constant(v: Double) extends ExpNode {
-        val children = Nil
-        def buildUsing(children: Iterator[ExpNode]) = Constant(v)
-        def eval(i: Int) = v
-        override def toString = v + "d"
+    def pickSubtree(id: Int): Option[ExpNode] = {
+        if(id == 0) return Some(this)
+        def findSubtree(i: Int, cs: Seq[ExpNode]): Option[ExpNode] = {
+            if(cs.isEmpty) return None
+            val total = cs.head.size
+            if(i < total) cs.head.pickSubtree(i)
+            else findSubtree(i-total, cs.tail)
+        }
+        findSubtree(id-1, children)
     }
 
-    implicit def ConstantPromoter(v: Double) = Constant(v)
-
-    case class Add(l: ExpNode, r: ExpNode) extends ExpNode {
-        val children = List(l, r)
-        def buildUsing(children: Iterator[ExpNode]) = {
-            def getChild(i: Int) = {
-                if(children.hasNext) children.next()
-                else Constant(0.0)
+    def modifySubtree(id: Int, nn: ExpNode=>ExpNode): ExpNode = {
+        if(id == 0) return nn(this)
+        def findSubtree(i: Int, cs: Seq[ExpNode]): (ExpNode, Int) = {
+            val total = cs.head.size
+            if(i < total) {
+                val subtree = cs.head.modifySubtree(i,nn)
+                return (subtree, 0)
             }
-            Add(getChild(0), getChild(1))
-        }
-        def eval(i: Int) = l.eval(i) + r.eval(i)
-        override def toString = "("+l+"+"+r+")"
-    }
-
-    case class Multiply(l: ExpNode, r: ExpNode) extends ExpNode {
-        val children = List(l, r)
-        def buildUsing(children: Iterator[ExpNode]) = {
-            def getChild(i: Int) = {
-                if(children.hasNext) children.next()
-                else Constant(1.0)
+            else {
+                val (replaced, index) = findSubtree(i-total, cs.tail)
+                return (replaced, index+1)
             }
-            Multiply(getChild(0), getChild(1))
         }
-        def eval(i: Int) = l.eval(i) * r.eval(i)
-        override def toString = "("+l+"*"+r+")"
+        val (replaced, index) = findSubtree(id-1, children)
+        return replaceChild(index, replaced)
     }
 
+    def mutateNode(id: Int, nn: ExpNode): ExpNode = {
+        modifySubtree(id, (x: ExpNode) => {
+            nn.buildUsing(x.children.iterator)
+        })
+    }
 
- }
+    def replaceSubtree(id: Int, nn: ExpNode): ExpNode = {
+        modifySubtree(id, (x: ExpNode) => nn)
+    }
+
+    def indexOf(n: ExpNode): Option[Int] = {
+        import scala.util.control.Breaks
+        val b = new Breaks
+        var index = 0;
+        b.breakable {
+            foreach{ x => if(x == n) b.break() else index += 1 }
+            return None
+        }
+        Some(index)
+    }
+
+/*        def pickTerminal(id: Int): Option[ExpNode] = {
+        if(terminal){
+            if(id == 0) return Some(this)
+            else        return None
+        }
+        def findSubtree(i: Int, cs: Seq[ExpNode]): Option[ExpNode] = {
+            if(cs.isEmpty) return None
+            val (_, t) = cs.head.nodeCount
+            if(i < t) cs.head.pickTerminal(i)
+            else findSubtree(i-t, cs.tail)
+        }
+        findSubtree(id, children)
+    }
+
+    def pickNonTerminal(id: Int): Option[ExpNode] = {
+        if(terminal) return None
+        if(id == 0) return Some(this)
+        def findSubtree(i: Int, cs: Seq[ExpNode]): Option[ExpNode] = {
+            if(cs.isEmpty) return None
+            val (nt, _) = cs.head.nodeCount
+            if(i < nt) cs.head.pickNonTerminal(i)
+            else findSubtree(i-nt, cs.tail)
+        }
+        findSubtree(id-1, children)
+    }*/
+}
 
