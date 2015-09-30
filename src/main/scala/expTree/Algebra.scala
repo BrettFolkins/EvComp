@@ -2,21 +2,30 @@ package com.expTree
 
 import scala.util.Random
 
-package object Algebra {
+object Algebra extends Algebra {
+    val elements: Seq[ExpNode] = Array(new Constant(),
+                                       new Add(), new Subtract(),
+                                       new Multiply(), new Divide())
+
+    def randomConstantValue(): Double = rand.nextInt(10).toDouble
+}
+
+abstract class Algebra {
+    val elements: Seq[ExpNode]
+
+    def randomConstantValue(): Double
 
     val rand = new Random()
+    val (terminals, nonterminals) = elements.partition(x => x.terminal)
 
-    def randomNode(h: Int): ExpNode = { //this will be abstract
-        if(h > 1) Add(Constant(0.0),Constant(0.0))//random node
-        else Constant(rand.nextDouble)
-    }
+    def randomElement[U](xs: Seq[U]): U = xs(rand.nextInt(xs.size))
 
     def getRandomSubtree(tree: ExpNode): ExpNode = {
         tree.pickSubtree(rand.nextInt(tree.size))
     }
 
     def mutateRandomNode(tree: ExpNode): ExpNode = {
-        tree.mutateNode(rand.nextInt(tree.size), randomNode(0))
+        tree.mutateNode(rand.nextInt(tree.size), randomElement(elements))
     }
 
     def crossoverSubtrees(left: ExpNode, right: ExpNode): (ExpNode, ExpNode) = {
@@ -28,14 +37,21 @@ package object Algebra {
 
     class TreeGenerator(height: Int) extends Iterator[ExpNode] {
         def hasNext = true
+
+        def randomNode(below: Int): ExpNode = {
+            if(below > 0) randomElement(nonterminals)
+            else randomElement(terminals)
+        }
+
         def next() = {
             randomNode(height).buildUsing(new TreeGenerator(height-1))
         }
     }
 
     case class Constant(v: Double) extends ExpNode {
+        def this() = this(0.0)
         val children = Nil
-        def buildUsing(children: Iterator[ExpNode]) = Constant(v)
+        def buildUsing(children: Iterator[ExpNode]) = Constant(randomConstantValue())
         def eval(i: Int) = v
         override def toString = v + "d"
     }
@@ -43,6 +59,7 @@ package object Algebra {
     implicit def ConstantPromoter(v: Double) = Constant(v)
 
     case class Add(l: ExpNode, r: ExpNode) extends ExpNode {
+        def this() = this(0.0,0.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 0.0
@@ -53,6 +70,7 @@ package object Algebra {
     }
 
     case class Subtract(l: ExpNode, r: ExpNode) extends ExpNode {
+        def this() = this(0.0,0.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 1.0
@@ -63,6 +81,7 @@ package object Algebra {
     }
 
     case class Multiply(l: ExpNode, r: ExpNode) extends ExpNode {
+        def this() = this(1.0,1.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 1.0
@@ -73,12 +92,18 @@ package object Algebra {
     }
 
     case class Divide(l: ExpNode, r: ExpNode) extends ExpNode {
+        def this() = this(1.0,1.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
             def sub(): ExpNode = if(subs.hasNext) subs.next() else 1.0
             Divide(sub(), sub())
         }
-        def eval(i: Int) = l.eval(i) / r.eval(i)
+        def eval(i: Int) = {
+            val reval = r.eval(i)
+            val leval = l.eval(i)
+            if(reval == 0) leval
+            else leval/reval
+        }
         override def toString = "("+l+"/"+r+")"
     }
 
