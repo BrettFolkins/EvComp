@@ -14,6 +14,7 @@ class RealSeqFunction(
   fitFunc: RSFitness){
     def apply(mutator: RSMutate, crossFunc: RSCrossover) : Problem = {
         class RSSolution(val dna: Seq[Float]) extends Solution[RSSolution] {
+            def inspect = dna
             val fitness = fitFunc(dna)
             def mutate() = new RSSolution(mutator(dna, min, max))
             def crossover(other: RSSolution) = {

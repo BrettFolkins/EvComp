@@ -35,6 +35,7 @@ object RegressionTree {
         import algebra._
 
         class Tree(val t: ExpNode) extends Solution[Tree] {
+            def inspect = t
             val fitness = {
                 (for((data,target) <- ds.data) yield {
                     val ans  = t.eval(data)

@@ -51,6 +51,10 @@ object App {
             )
         }
 
+        // pass Optimizer diagnostic objects that inspect populations?
+        // clean up algebra and tree based solution creation?
+        // make terminal/nonterminal index to full index conversion in ExpNode?
+
         val problem  = RegressionTree(testDS, 3)
         val solver   = new HillClimb(50000)
         //val solver   = new GA(popSize = 50, genMax = 100, tournamentSize=3)
@@ -59,8 +63,10 @@ object App {
             solver(problem)
         }
 
+        val tree = (solution._2.inspect).asInstanceOf[ExpNode]
+
         println("Found: ")
-        println("\t"+solution._2)
+        println("\t"+tree)
         println("\tIn: "+sec+" seconds")
     }
 }
