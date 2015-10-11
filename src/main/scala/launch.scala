@@ -2,6 +2,7 @@ package com
 
 import com.graph._
 import com.expTree._
+import com.Benchmark._
 import swing._
 
 /*object App extends SimpleSwingApplication{
@@ -42,19 +43,24 @@ object App {
             val range = 10.0
             val vectorLen = 3
             val data: Seq[(Seq[Double],Double)] = List(
-                (Array(0.0,1.0,1.0),0.0),
-                (Array(1.0,1.0,1.0),2.0),
-                (Array(2.0,1.0,1.0),4.0),
-                (Array(3.0,1.0,1.0),6.0),
-                (Array(4.0,1.0,1.0),8.0)
+                (Array(0.0,1.0,1.0), 0.0),
+                (Array(1.0,1.0,1.0), 2.0),
+                (Array(2.0,1.0,1.0), 4.0),
+                (Array(3.0,1.0,1.0), 6.0),
+                (Array(4.0,1.0,1.0), 8.0)
             )
         }
+
         val problem  = RegressionTree(testDS, 3)
-        val solver   = new GA(popSize = 50, genMax = 200, tournamentSize=3)
-        val solution = solver(problem)
+        val solver   = new HillClimb(50000)
+        //val solver   = new GA(popSize = 50, genMax = 100, tournamentSize=3)
 
-        println(solution)
+        val (solution,sec) = time{
+            solver(problem)
+        }
 
+        println("Found: ")
+        println("\t"+solution._2)
+        println("\tIn: "+sec+" seconds")
     }
 }
-
