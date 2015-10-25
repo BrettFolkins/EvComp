@@ -14,12 +14,14 @@ class GA (
         var pop = Vector.fill[p.SolutionType](popSize)(p.potential())
 
         for(i <- 0 until genMax){
-            pop = (1 to popSize by 2 par).map{ x =>
+            val newPop = (1 to popSize by 2 par).map{ x =>
                 val parentA = tournament(pop, tournamentSize)(MinOrd)
                 val parentB = tournament(pop, tournamentSize)(MinOrd)
                 val (childA, childB) = parentA.crossover(parentB)
                 List(childA.mutate(), childB.mutate())
             }.flatten.to[Vector]
+
+            pop = (newPop :+ pop.max(MinOrd))
 
             ds log pop
         }
