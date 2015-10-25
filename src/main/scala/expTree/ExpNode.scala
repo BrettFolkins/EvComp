@@ -56,7 +56,7 @@ abstract class ExpNode extends Traversable[ExpNode]{
     /**
      * Indexing below is based on preordered traversal visiting order
      * Since size is O(1), indexing can be done O(log(n)) for arbitrarily
-     * constructed trees. Modifications create only O(log(n)) new nodes as well
+     * constructed trees. Modifications create only O(log(n)) new nodes.
      */
 
     def pickSubtree(id: Int): ExpNode = {
@@ -99,32 +99,36 @@ abstract class ExpNode extends Traversable[ExpNode]{
     }
 
     /**
-     * Ideally, these would be expanded to the thouroghness of subtree selection
-     * an easy way to avoid code duplication escapes me and, well, YAGNI
+     * Pick Terminal/nonTerminal returns an ExpNode reference and the
+     * full tree index of the chosen node
      */
 
-    def pickTerminal(id: Int): ExpNode = {
+    def pickTerminal(id: Int): (ExpNode, Int) = {
         if(terminal){
-            if(id == 0) return this
+            if(id == 0) return (this,0)
             else        throw new IllegalArgumentException("Index out of bounds")
         }
-        def findSubtree(i: Int, cs: Seq[ExpNode]): ExpNode = {
+        def findSubtree(i: Int, cs: Seq[ExpNode]): (ExpNode, Int) = {
             if(cs.isEmpty) throw new IllegalArgumentException("Index out of bounds")
-            val (_, t) = cs.head.nodeCount
-            if(i < t) cs.head.pickTerminal(i)
-            else findSubtree(i-t, cs.tail)
+            val (nt, t) = cs.head.nodeCount
+            //get the node, its position in the subree, and the subtree's position
+            val ((node, pos), d) = if(i<t) (  cs.head.pickTerminal(i), 1)
+                                   else    (findSubtree(i-t, cs.tail), nt+t)
+            (node, pos+d)
         }
         findSubtree(id, children)
     }
 
-    def pickNonTerminal(id: Int): ExpNode = {
+    def pickNonTerminal(id: Int): (ExpNode, Int) = {
         if(terminal) throw new IllegalArgumentException("Nonterminal search on terminal element")
-        if(id == 0) return this
-        def findSubtree(i: Int, cs: Seq[ExpNode]): ExpNode = {
+        if(id == 0) return (this, 0)
+        def findSubtree(i: Int, cs: Seq[ExpNode]): (ExpNode, Int) = {
             if(cs.isEmpty) throw new IllegalArgumentException("Index out of bounds")
-            val (nt, _) = cs.head.nodeCount
-            if(i < nt) cs.head.pickNonTerminal(i)
-            else findSubtree(i-nt, cs.tail)
+            val (nt, t) = cs.head.nodeCount
+            //get the node, its position in the subree, and the subtree's position
+            val ((node, pos), d) = if(i<nt) (cs.head.pickNonTerminal(i), 1)
+                                   else     (findSubtree(i-nt, cs.tail), nt+t)
+            (node, pos+d)
         }
         findSubtree(id-1, children)
     }
