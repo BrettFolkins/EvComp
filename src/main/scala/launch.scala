@@ -1,8 +1,9 @@
 package com
 
-import com.graph._
-import com.expTree._
 import com.Benchmark._
+import com.expTree._
+import com.graph._
+import scala.util.Random
 import swing._
 
 /*object App extends SimpleSwingApplication{
@@ -28,6 +29,7 @@ import swing._
             data(index).toDouble
         }
     }
+    class FunctionDataSource()//...
     def top = new MainFrame{
         title = "Optimizer"
         val aL = new java.util.ArrayList[DataSource]()
@@ -40,33 +42,39 @@ import swing._
 object App {
     def main(args: Array[String]) {
         val testDS = new DataSet{
-            val range = 10.0
-            val vectorLen = 3
-            val data: Seq[(Seq[Double],Double)] = List(
-                (Array(0.0,1.0,1.0), 0.0),
-                (Array(1.0,1.0,1.0), 2.0),
-                (Array(2.0,1.0,1.0), 4.0),
-                (Array(3.0,1.0,1.0), 6.0),
-                (Array(4.0,1.0,1.0), 8.0)
-            )
+
+            //def f(X: Seq[Double]): Double = Math.sin(X(0))*100.0
+            def f(X: Seq[Double]): Double = X.map(x => x*x*x).sum
+            val data: Seq[(Seq[Double],Double)] = {
+                val rand = new Random()
+                def r()  = (rand.nextDouble - 0.5) * 10.0
+                val xs   = (1 to 50).map{ i =>
+                    Array.fill[Double](3)(r()).toSeq
+                }
+                xs.map( x => (x, f(x)) )
+            }
+            val range = 1.0
+            val vectorLen = data.map(x => x._1.length).min
+
         }
 
         // pass Optimizer diagnostic objects that inspect populations?
         // clean up algebra and tree based solution creation?
         // make terminal/nonterminal index to full index conversion in ExpNode?
+        // simplify function
 
         val problem  = RegressionTree(testDS, 3)
-        val solver   = new HillClimb(50000)
-        //val solver   = new GA(popSize = 50, genMax = 100, tournamentSize=3)
-
-        val (solution,sec) = time{
-            solver(problem)
+        //val solver   = new HillClimb(50000)
+        //val solver   = new Annealing(1000, 2000)
+        val solver   = new GA(popSize = 1500, genMax = 1000, tournamentSize=3)
+        val (_,sec) = time{
+            for(i <- 1 to 1){
+                val (fitness,ans) = solver(problem)
+                println("\t"+ans+"\n")
+            }
         }
+        println("Run in "+sec)
 
-        val tree = (solution._2.inspect).asInstanceOf[ExpNode]
-
-        println("Found: ")
-        println("\t"+tree)
-        println("\tIn: "+sec+" seconds")
     }
 }
+

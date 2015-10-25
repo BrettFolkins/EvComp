@@ -41,7 +41,7 @@ object RegressionTree {
                     val ans  = t.eval(data)
                     val diff = target - ans
                     diff*diff
-                }).sum
+                }).sum + t.size
             }
             def mutate(): Tree = new Tree(algebra.mutateRandomNode(t))
             def crossover(other: Tree): (Tree, Tree) = {
