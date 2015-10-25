@@ -41,36 +41,34 @@ import swing._
 
 object App {
     def main(args: Array[String]) {
-        val testDS = new DataSet{
+        val testDS = DataSet.fromFunc(3, 50, 5.0){ x => x.map(y => y*y*y).sum }
 
-            //def f(X: Seq[Double]): Double = Math.sin(X(0))*100.0
-            def f(X: Seq[Double]): Double = X.map(x => x*x*x).sum
-            val data: Seq[(Seq[Double],Double)] = {
-                val rand = new Random()
-                def r()  = (rand.nextDouble - 0.5) * 10.0
-                val xs   = (1 to 50).map{ i =>
-                    Array.fill[Double](3)(r()).toSeq
-                }
-                xs.map( x => (x, f(x)) )
-            }
-            val range = 1.0
-            val vectorLen = data.map(x => x._1.length).min
-
-        }
-
-        // pass Optimizer diagnostic objects that inspect populations?
+        // load DS from file
         // clean up algebra and tree based solution creation?
         // make terminal/nonterminal index to full index conversion in ExpNode?
-        // simplify function
+        // write a tree simplify function
 
         val problem  = RegressionTree(testDS, 3)
+
+        val diag = new Diagnostic[problem.SolutionType] {
+            def log(pop: Seq[problem.SolutionType]) {
+                for(ind <- pop) println(ind.fitness)
+                println()
+            }
+        }
+
         //val solver   = new HillClimb(50000)
         //val solver   = new Annealing(1000, 2000)
-        val solver   = new GA(popSize = 1500, genMax = 1000, tournamentSize=3)
+        val solver   = new GA(popSize = 10, genMax = 3, tournamentSize=3)
         val (_,sec) = time{
             for(i <- 1 to 1){
-                val (fitness,ans) = solver(problem)
+
+                import scala.collection.mutable.ListBuffer
+                val averages = new ListBuffer[Double]()
+
+                val ans = solver(problem)(Diagnostic.best(averages))
                 println("\t"+ans+"\n")
+                for(avg <- averages) print(avg + "\t");
             }
         }
         println("Run in "+sec)

@@ -10,9 +10,7 @@ class GA (
     tournamentSize: Int = 3
   ) extends Optimizer {
 
-    def apply(p: Problem): (Seq[Double], p.SolutionType) = {
-        val averages = Array.ofDim[Double](genMax)
-
+    def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
         var pop = Vector.fill[p.SolutionType](popSize)(p.potential())
 
         for(i <- 0 until genMax){
@@ -23,10 +21,10 @@ class GA (
                 List(childA.mutate(), childB.mutate())
             }.flatten.to[Vector]
 
-            averages(i) = pop.foldLeft(0.0)(_ + _.fitness) / pop.size.toDouble
+            ds log pop
         }
 
-        (averages, pop.max(MinOrd))
+        pop.max(MinOrd)
     }
 
     override def toString() = "GA"

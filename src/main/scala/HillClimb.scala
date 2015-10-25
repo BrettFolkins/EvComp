@@ -1,16 +1,15 @@
 package com
 
 class HillClimb(trials: Int) extends Optimizer {
-    def apply(p: Problem): (Seq[Double], p.SolutionType) = {
-        val scores = Array.ofDim[Double](trials)
+    def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
         var sol = p.potential()
         for(i <- 0 until trials) {
             val next = sol.mutate()
             if(next.fitness < sol.fitness) sol = next
-            scores(i) = sol.fitness
+            ds log Seq(sol)
         }
-        (scores, sol)
+        sol
     }
 
-    override def toString() = "Hill Climb"
+    override def toString = "Hill Climb"
 }

@@ -4,12 +4,6 @@ import com.expTree._
 
 import scala.util.Random
 
-abstract class DataSet{
-    val range: Double
-    val vectorLen: Int
-    val data: Seq[(Seq[Double],Double)]
-}
-
 object RegressionTree {
     def apply(ds: DataSet, iHeight: Int): Problem = {
 
