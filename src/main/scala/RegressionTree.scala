@@ -37,10 +37,16 @@ object RegressionTree {
                     diff*diff
                 }).sum + t.size
             }
-            def mutate(): Tree = new Tree(algebra.mutateRandomNode(t))
+            def mutate(): Tree = {
+                new Tree(algebra.mutateRandomNode(t))
+            }
             def crossover(other: Tree): (Tree, Tree) = {
-                val (l,r) = algebra.crossoverSubtrees(t, other.t)
-                (new Tree(l), new Tree(r))
+                val l = t
+                val r = other.t
+                val ( left, lidx) = algebra.getBaisedSubtree(l, 0.9)
+                val (right, ridx) = algebra.getBaisedSubtree(r, 0.9)
+                (new Tree(l.replaceSubtree(lidx, right)),
+                 new Tree(r.replaceSubtree(ridx, left) ) )
             }
             override def toString() = t.toString + " size: " + t.size
         }

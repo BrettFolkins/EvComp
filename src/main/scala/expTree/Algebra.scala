@@ -18,10 +18,12 @@ abstract class Algebra {
     }
 
     def getBaisedSubtree(tree: ExpNode, bias: Double): (ExpNode, Int) = {
-        if(rand.nextDouble > bias)
+        if(tree.terminal) return (tree,0)
+        if(rand.nextDouble > bias) {
             tree.pickTerminal(rand.nextInt(tree.nodeCount._2))
-        else
+        } else {
             tree.pickNonTerminal(rand.nextInt(tree.nodeCount._1))
+        }
     }
 
     def mutateRandomNode(tree: ExpNode): ExpNode = {
