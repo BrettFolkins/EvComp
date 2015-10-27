@@ -122,7 +122,7 @@ abstract class Algebra {
 
         t match {
             case Add(_,_) => {
-                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                if(left.constant && right.constant){
                     Constant(left.eval() + right.eval())
                 } else if (left == Constant(0.0)) {
                     right
@@ -133,7 +133,7 @@ abstract class Algebra {
                 }
             }
             case Multiply(_,_) => {
-                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                if(left.constant && right.constant){
                     Constant(left.eval() * right.eval())
                 } else if (left == Constant(1.0)) {
                     right
@@ -144,7 +144,7 @@ abstract class Algebra {
                 }
             }
             case Divide(_,_) => {
-                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                if(left.constant && right.constant){
                     Constant(left.eval() / right.eval())
                 } else if (left == Constant(0.0)) {
                     Constant(0.0)
@@ -157,7 +157,7 @@ abstract class Algebra {
                 }
             }
             case Subtract(_,_) => {
-                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                if(left.constant && right.constant){
                     Constant(left.eval() - right.eval())
                 } else if (right == Constant(0.0)) {
                     left
