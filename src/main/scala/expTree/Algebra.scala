@@ -17,7 +17,7 @@ abstract class Algebra {
         tree.pickSubtree(rand.nextInt(tree.size))
     }
 
-    def getBaisedSubtree(tree: ExpNode, bias: Double): (ExpNode, Int) = {
+    def getBiasedSubtree(tree: ExpNode, bias: Double): (ExpNode, Int) = {
         if(tree.terminal) return (tree,0)
         if(rand.nextDouble > bias) {
             tree.pickTerminal(rand.nextInt(tree.nodeCount._2))
@@ -41,7 +41,7 @@ abstract class Algebra {
         def hasNext = true
 
         def randomNode(below: Int): ExpNode = {
-            if(below > 0) randomElement(nonterminals)
+            if(below > 0) randomElement(elements)
             else randomElement(terminals)
         }
 

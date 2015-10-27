@@ -11,9 +11,10 @@ abstract class ExpNode extends Traversable[ExpNode]{
 
     val children: Seq[ExpNode]
 
-    def terminal = children.isEmpty
+    lazy val terminal = children.isEmpty
 
     val constant = false
+
     /**
      * lazy because it depends on an abstract member that will be
      * initialized after this constructor is called
