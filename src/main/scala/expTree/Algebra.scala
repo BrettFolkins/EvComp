@@ -144,7 +144,9 @@ abstract class Algebra {
                 }
             }
             case Divide(_,_) => {
-                if(left.constant && right.constant){
+                if(right == Constant(0.0)) {
+                    left
+                } else if(left.constant && right.constant){
                     Constant(left.eval() / right.eval())
                 } else if (left == Constant(0.0)) {
                     Constant(0.0)
