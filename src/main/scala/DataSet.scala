@@ -1,6 +1,7 @@
 package com
 
 import scala.util.Random
+import scala.io.Source
 
 abstract class DataSet{
     val range: Double
@@ -25,5 +26,15 @@ object DataSet{
         }
         val vectorLen = data.map(x => x._1.length).min
     }
-    //def fromFile()
+    def fromFile(filename: String) = {
+        val source = Source.fromFile(filename).getLines().toList
+        new DataSet{
+            val data = for(line <- source) yield {
+                val nums = line.split(',').map(x => x.toDouble).toSeq
+                (nums.init, nums.last)
+            }
+            val range = data.map(x => x._2).max
+            val vectorLen = data.map(x => x._1.length).min
+        }
+    }
 }
