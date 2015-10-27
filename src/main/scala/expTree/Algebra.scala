@@ -51,6 +51,7 @@ abstract class Algebra {
     }
 
     case class Constant(v: Double) extends ExpNode {
+        override val constant = true
         def this() = this(0.0)
         val children = Nil
         def buildUsing(children: Iterator[ExpNode]) = Constant(randomConstantValue())
@@ -61,6 +62,7 @@ abstract class Algebra {
     implicit def ConstantPromoter(v: Double) = Constant(v)
 
     case class Add(l: ExpNode, r: ExpNode) extends ExpNode {
+        override val constant = l.constant && r.constant
         def this() = this(0.0,0.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
@@ -72,6 +74,7 @@ abstract class Algebra {
     }
 
     case class Subtract(l: ExpNode, r: ExpNode) extends ExpNode {
+        override val constant = l.constant && r.constant
         def this() = this(0.0,0.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
@@ -83,6 +86,7 @@ abstract class Algebra {
     }
 
     case class Multiply(l: ExpNode, r: ExpNode) extends ExpNode {
+        override val constant = l.constant && r.constant
         def this() = this(1.0,1.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
@@ -94,6 +98,7 @@ abstract class Algebra {
     }
 
     case class Divide(l: ExpNode, r: ExpNode) extends ExpNode {
+        override val constant = l.constant && r.constant
         def this() = this(1.0,1.0)
         val children = List(l, r)
         def buildUsing(subs: Iterator[ExpNode]) = {
@@ -107,6 +112,63 @@ abstract class Algebra {
             else leval/reval
         }
         override def toString = "("+l+"/"+r+")"
+    }
+
+    def simplify(t: ExpNode): ExpNode = {
+        if(t.terminal) return t
+
+        val left  = simplify(t.children(0))
+        val right = simplify(t.children(1))
+
+        t match {
+            case Add(_,_) => {
+                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                    Constant(left.eval() + right.eval())
+                } else if (left == Constant(0.0)) {
+                    right
+                } else if (right == Constant(0.0)) {
+                    left
+                } else {
+                    Add(left, right)
+                }
+            }
+            case Multiply(_,_) => {
+                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                    Constant(left.eval() * right.eval())
+                } else if (left == Constant(1.0)) {
+                    right
+                } else if (right == Constant(1.0)) {
+                    left
+                } else {
+                    Multiply(left, right)
+                }
+            }
+            case Divide(_,_) => {
+                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                    Constant(left.eval() / right.eval())
+                } else if (left == Constant(0.0)) {
+                    Constant(0.0)
+                } else if (right == Constant(1.0)) {
+                    left
+                } else if (left == right) {
+                    Constant(1.0)
+                } else {
+                    Divide(left, right)
+                }
+            }
+            case Subtract(_,_) => {
+                if(left.forall(x => x.constant) && right.forall(x => x.constant)){
+                    Constant(left.eval() - right.eval())
+                } else if (right == Constant(0.0)) {
+                    left
+                } else if (left == right) {
+                    Constant(0.0)
+                } else {
+                    Subtract(left, right)
+                }
+            }
+            case _ => t
+        }
     }
 
 }
