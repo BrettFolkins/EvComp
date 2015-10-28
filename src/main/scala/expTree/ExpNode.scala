@@ -56,6 +56,11 @@ abstract class ExpNode extends Traversable[ExpNode]{
         children.foreach(c => c.foreach(op))
     }
 
+    //default traversable uses foreach in toString, causes infinite loop
+    override def toString(): String = {
+        "ExpNode(" + children.mkString + ")"
+    }
+
     /**
      * Indexing below is based on preordered traversal visiting order
      * Since size is O(1), indexing can be done O(log(n)) for arbitrarily

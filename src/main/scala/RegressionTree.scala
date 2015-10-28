@@ -5,7 +5,13 @@ import com.expTree._
 import scala.util.Random
 
 object RegressionTree {
-    def apply(ds: DataSet, iHeight: Int, parsimony: Double): Problem = {
+    def apply(ds: DataSet,
+        fullHeight:Int = 3,
+        maxHeight: Int = 6,
+        parsimony: Double = 1.0,
+        crossoverBias: Double = 0.9,
+        subtreeReplaceChance: Double = 0.02
+      ): Problem = {
 
         val nodeSet = new Algebra {
             def randomConstantValue(): Double = ((rand.nextDouble()-0.5)*2.0)*ds.range
@@ -27,6 +33,18 @@ object RegressionTree {
                                                new Multiply(), new Divide()   )
         }
 
+        class Sapling(tH: Int, fH: Int) extends Iterator[ExpNode] {
+            def hasNext = true
+            def rNode(): ExpNode = {
+                if(tH <= 0) nodeSet.randomElement(nodeSet.terminals) //last layer
+                else if (fH > 0) nodeSet.randomElement(nodeSet.nonterminals) //full layer
+                else nodeSet.randomElement(nodeSet.elements) //above tH but below fH, any element goes
+            }
+            def next() = {
+                rNode().buildUsing(new Sapling(tH-1, fH-1))
+            }
+        }
+
         class Tree(val t: ExpNode) extends Solution[Tree] {
             def inspect = t
             val fitness = {
@@ -37,29 +55,21 @@ object RegressionTree {
                 }).sum
                 val rms = Math.sqrt(ms)
 
-                //rms
-                rms + parsimony * t.size
-                //(rms+1.0) * (1.0 + parsimony * t.size)
+                rms + (parsimony * t.size)
             }
             def mutate(): Tree = {
                 //new Tree(nodeSet.mutateRandomNode(t))
 
                 val r = nodeSet.rand.nextDouble;
-/*                if(r <= 0.05) {
+                if(r <= subtreeReplaceChance) {
                     //replace random subtree
+                    val newSubtree = (new Sapling(maxHeight,fullHeight)).next()
                     val toReplace  = nodeSet.rand.nextInt(t.size)
-                    //val oldSubtree = t.pickSubtree(toReplace)
-                    //val newDepth   = oldSubtree.depth / 2
-                    val newSubtree = (new nodeSet.TreeGenerator(iHeight)).next()
                     new Tree(t.replaceSubtree(toReplace,newSubtree))
-                } else */
-                if (r <= 0.10) {
-                    //become random subtree
-                    new Tree(t.pickSubtree(nodeSet.rand.nextInt(t.size)))
-                } else if (r <= 0.30) {
+                } /*else if (r <= 0.21) {
                     //mutate random node
                     new Tree(nodeSet.mutateRandomNode(t))
-                } else {
+                } */else {
                     //no mutation
                     this
                 }
@@ -67,21 +77,20 @@ object RegressionTree {
             def crossover(other: Tree): (Tree, Tree) = {
                 val l = t
                 val r = other.t
-                val ( left, lidx) = nodeSet.getBiasedSubtree(l, 0.8)
-                val (right, ridx) = nodeSet.getBiasedSubtree(r, 0.8)
+                val ( left, lidx) = nodeSet.getBiasedSubtree(l, crossoverBias)
+                val (right, ridx) = nodeSet.getBiasedSubtree(r, crossoverBias)
                 (new Tree(l.replaceSubtree(lidx, right)),
                  new Tree(r.replaceSubtree(ridx, left) ) )
 
-/*
-                val (l,r) = nodeSet.crossoverSubtrees(t, other.t)
+/*                val (l,r) = nodeSet.crossoverSubtrees(t, other.t)
                 (new Tree(l), new Tree(r))*/
 
             }
-            override def toString() = t.toString + " size: " + t.size
+            override def toString() = nodeSet.simplify(t).toString
         }
 
         new Problem {
-            val generator = new nodeSet.TreeGenerator(iHeight)
+            val generator: Iterator[ExpNode] = new Sapling(maxHeight, fullHeight)
             type SolutionType = Tree
             def potential() = new Tree(generator.next());
         }

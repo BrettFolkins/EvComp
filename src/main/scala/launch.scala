@@ -15,12 +15,19 @@ import scala.collection.mutable.ArrayBuffer
 
 object App {
     def main(args: Array[String]) {
-        //val testDS  = DataSet.fromFunc(1, 50, 3.14){ x => Math.exp(x(0)) }
-        val testDS  = DataSet.fromFunc(3, 50, 10.0){ x => x.map(y => y*y*y).sum }
-        //val testDS = DataSet.fromFile("GPProjectData.csv")
+        //val testDS  = DataSet.fromFunc(1, 50, 5.0){ x => Math.exp(x(0)) }
+        //val testDS  = DataSet.fromFunc(3, 50, 10.0){ x => x.map(y => y*y*y).sum }
+        val testDS = DataSet.fromFile("GPProjectData.csv")
 
-        val problem = RegressionTree(testDS, 6, 1.50)
-        val solver  = new GA(popSize = 1000, genMax=1000, tournamentSize=8)
+        val problem = RegressionTree(testDS,
+            fullHeight = 3,
+            maxHeight = 6,
+            parsimony = 0.50,
+            crossoverBias = 0.9,
+            subtreeReplaceChance = 0.10
+        )
+        val solver  = new GA(popSize = 201, genMax = 1000, tournamentSize=4)
+        //val solver  = new GA(popSize = 5, genMax = 10, tournamentSize=2)
         //val solver  = new HillClimb(1000)
 
         val best    = new ArrayBuffer[Double]()
@@ -30,7 +37,7 @@ object App {
             def log(pop: Seq[problem.SolutionType]) {
                 val fits = pop.map(x => x.fitness)
                 best    += fits.min
-                average += fits.sum / pop.size.toDouble
+                average += fits.sorted.apply(fits.size/2)//fits.sum / pop.size.toDouble
                 size    += pop.map(x => x.inspect.asInstanceOf[ExpNode].size).sum / pop.size.toDouble
             }
         }
@@ -39,14 +46,19 @@ object App {
             override def run() = {
                 val ans = solver(problem)(Diag)
                 println(ans)
+                println("Fitness: "+ans.fitness)
+
                 val tree  = ans.inspect.asInstanceOf[ExpNode]
-                val stree = BasicAlgebra.simplify(tree)
-                println(stree)
+                val correctData = testDS.data.map(x => x._2)
+                val foundData = for((data,target) <- testDS.data) yield tree.eval(data)
+                val res = Seq(new ArrayDataSource("Correct", correctData.sorted),
+                              new ArrayDataSource("Found"  , foundData.sorted))
+                (new GraphWindow(res)).startup(Array())
             }
         }.start
 
         val data = Seq(new ArrayDataSource("Best", best),
-                       new ArrayDataSource("Average", average),
+                       new ArrayDataSource("Median", average),
                        new ArrayDataSource("Size", size))
         (new GraphWindow(data)).startup(Array())
     }

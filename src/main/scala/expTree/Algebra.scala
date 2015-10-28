@@ -56,7 +56,7 @@ abstract class Algebra {
         val children = Nil
         def buildUsing(children: Iterator[ExpNode]) = Constant(randomConstantValue())
         def eval(i: Any) = v
-        override def toString = v + "d"
+        override def toString = "%1.2f" format v
     }
 
     implicit def ConstantPromoter(v: Double) = Constant(v)
@@ -121,7 +121,7 @@ abstract class Algebra {
         val right = simplify(t.children(1))
 
         t match {
-            case Add(_,_) => {
+            case a: Add => {
                 if(left.constant && right.constant){
                     Constant(left.eval() + right.eval())
                 } else if (left == Constant(0.0)) {
@@ -132,7 +132,7 @@ abstract class Algebra {
                     Add(left, right)
                 }
             }
-            case Multiply(_,_) => {
+            case a: Multiply => {
                 if(left.constant && right.constant){
                     Constant(left.eval() * right.eval())
                 } else if (left == Constant(1.0)) {
@@ -143,7 +143,7 @@ abstract class Algebra {
                     Multiply(left, right)
                 }
             }
-            case Divide(_,_) => {
+            case a: Divide => {
                 if(right == Constant(0.0)) {
                     left
                 } else if(left.constant && right.constant){
@@ -158,7 +158,7 @@ abstract class Algebra {
                     Divide(left, right)
                 }
             }
-            case Subtract(_,_) => {
+            case a: Subtract => {
                 if(left.constant && right.constant){
                     Constant(left.eval() - right.eval())
                 } else if (right == Constant(0.0)) {
