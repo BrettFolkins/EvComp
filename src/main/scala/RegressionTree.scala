@@ -48,14 +48,6 @@ object RegressionTree {
         class Tree(val t: ExpNode) extends Solution[Tree] {
             def inspect = t
             val fitness = {
-/*                val ms = (for((data,target) <- ds.data) yield {
-                    val ans  = t.eval(data)
-                    val diff = target - ans
-                    diff*diff
-                }).sum
-                val rms = Math.sqrt(ms)
-
-                rms + (parsimony * t.size)*/
                 val raw = fit(t.eval(_))
                 raw + (parsimony * t.size)
             }

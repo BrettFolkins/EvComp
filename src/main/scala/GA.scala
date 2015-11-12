@@ -22,6 +22,7 @@ class GA (
             }.flatten.to[Vector]
 
             pop = (newPop :+ pop.max(MinOrd))
+            //pop = newPop
 
             ds log pop
         }
