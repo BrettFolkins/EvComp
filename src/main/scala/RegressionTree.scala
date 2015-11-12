@@ -5,7 +5,7 @@ import com.expTree._
 import scala.util.Random
 
 object RegressionTree {
-    def apply(ds: DataSet,
+    def apply(fit: FitnessEval,
         fullHeight:Int = 3,
         maxHeight: Int = 6,
         parsimony: Double = 1.0,
@@ -14,8 +14,8 @@ object RegressionTree {
       ): Problem = {
 
         val nodeSet = new Algebra {
-            def randomConstantValue(): Double = ((rand.nextDouble()-0.5)*2.0)*ds.range
-            def randomVarIndex() = rand.nextInt(ds.vectorLen)
+            def randomConstantValue(): Double = ((rand.nextDouble()-0.5)*2.0)*fit.range
+            def randomVarIndex() = rand.nextInt(fit.inputCount)
             case class Variable(i: Int) extends ExpNode {
                 def this() = this(randomVarIndex())
                 val children = Nil
@@ -48,29 +48,25 @@ object RegressionTree {
         class Tree(val t: ExpNode) extends Solution[Tree] {
             def inspect = t
             val fitness = {
-                val ms = (for((data,target) <- ds.data) yield {
+/*                val ms = (for((data,target) <- ds.data) yield {
                     val ans  = t.eval(data)
                     val diff = target - ans
                     diff*diff
                 }).sum
                 val rms = Math.sqrt(ms)
 
-                rms + (parsimony * t.size)
+                rms + (parsimony * t.size)*/
+                val raw = fit(t.eval(_))
+                raw + (parsimony * t.size)
             }
             def mutate(): Tree = {
-                //new Tree(nodeSet.mutateRandomNode(t))
-
                 val r = nodeSet.rand.nextDouble;
                 if(r <= subtreeReplaceChance) {
                     //replace random subtree
                     val newSubtree = (new Sapling(maxHeight,fullHeight)).next()
                     val toReplace  = nodeSet.rand.nextInt(t.size)
                     new Tree(t.replaceSubtree(toReplace,newSubtree))
-                } /*else if (r <= 0.21) {
-                    //mutate random node
-                    new Tree(nodeSet.mutateRandomNode(t))
-                } */else {
-                    //no mutation
+                } else {
                     this
                 }
             }
@@ -81,10 +77,6 @@ object RegressionTree {
                 val (right, ridx) = nodeSet.getBiasedSubtree(r, crossoverBias)
                 (new Tree(l.replaceSubtree(lidx, right)),
                  new Tree(r.replaceSubtree(ridx, left) ) )
-
-/*                val (l,r) = nodeSet.crossoverSubtrees(t, other.t)
-                (new Tree(l), new Tree(r))*/
-
             }
             override def toString() = nodeSet.simplify(t).toString
         }

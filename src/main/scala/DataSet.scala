@@ -3,10 +3,16 @@ package com
 import scala.util.Random
 import scala.io.Source
 
-abstract class DataSet{
-    val range: Double
-    val vectorLen: Int
+abstract class DataSet extends FitnessEval {
     val data: Seq[(Seq[Double],Double)]
+    def apply(f: Seq[Double] => Double): Double = {
+        val ms = (for((data,target) <- data) yield {
+                    val ans  = f(data)
+                    val diff = target - ans
+                    diff*diff
+                }).sum
+        Math.sqrt(ms)
+    }
 }
 
 object DataSet{
@@ -24,7 +30,7 @@ object DataSet{
             }
             xs.map( x => (x, f(x)) )
         }
-        val vectorLen = data.map(x => x._1.length).min
+        val inputCount = data.map(x => x._1.length).min
     }
     def fromFile(filename: String) = {
         val source = Source.fromFile(filename).getLines().toList
@@ -34,7 +40,7 @@ object DataSet{
                 (nums.init, nums.last)
             }
             val range = data.map(x => x._2).max
-            val vectorLen = data.map(x => x._1.length).min
+            val inputCount = data.map(x => x._1.length).min
         }
     }
 }
