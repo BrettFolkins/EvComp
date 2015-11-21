@@ -22,11 +22,11 @@ object App {
 
         val testDS = new FitnessEval{
             val range = 100.0
-            val inputCount = 3
+            val inputCount = 2
             def calc(func: Seq[Double] => Double) : Seq[Double] = {
                 def control(q: Quad): Double =
-                    //func(List(q.accelerometer, q.barometer))
-                    func(List(q.position, q.velocity, q.acceleration))
+                    func(List(q.accelerometer, q.barometer))
+                    //func(List(q.position, q.velocity, q.acceleration))
                 Quad.simulate(new Quad(), 10.0, control)
             }
             def apply(func: Seq[Double] => Double) : Double = {
@@ -44,11 +44,11 @@ object App {
         val problem = RegressionTree(testDS,
             fullHeight = 3,
             maxHeight = 6,
-            parsimony = 3.0,
+            parsimony = 24.0,
             crossoverBias = 0.9,
             subtreeReplaceChance = 0.10
         )
-        val solver  = new GA(popSize = 201, genMax = 200, tournamentSize=6)
+        val solver  = new GA(popSize = 201, genMax = 1500, tournamentSize=18, eleitism=false)
 
         val best    = new ArrayBuffer[Double]()
         //val average = new ArrayBuffer[Double]()

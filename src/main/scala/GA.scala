@@ -7,7 +7,8 @@ import scala.collection.mutable.ArrayBuffer
 class GA (
     popSize: Int = 100,
     genMax: Int = 100,
-    tournamentSize: Int = 3
+    tournamentSize: Int = 3,
+    eleitism: Boolean = true
   ) extends Optimizer {
 
     def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
@@ -21,8 +22,8 @@ class GA (
                 List(childA.mutate(), childB.mutate())
             }.flatten.to[Vector]
 
-            pop = (newPop :+ pop.max(MinOrd))
-            //pop = newPop
+            pop = if(eleitism) (newPop :+ pop.max(MinOrd))
+                  else newPop
 
             ds log pop
         }
