@@ -18,9 +18,8 @@ object App {
         //val testDS  = DataSet.fromFunc(1, 50, 5.0){ x => Math.exp(x(0)) }
         //val testDS  = DataSet.fromFunc(3, 50, 10.0){ x => x.map(y => y*y*y).sum }
         //val testDS = DataSet.fromFile("GPProjectData.csv")
-
-
-        val testDS = new FitnessEval{
+        val testDS = DataSet.fromFile("propData")
+/*        val testDS = new FitnessEval{
             val range = 100.0
             val inputCount = 2
             def calc(func: Seq[Double] => Double) : Seq[Double] = {
@@ -38,17 +37,15 @@ object App {
                 (new GraphWindow(List(new ArrayDataSource("height",results)))).startup(Array())
             }
         }
-
-
-
+*/
         val problem = RegressionTree(testDS,
             fullHeight = 3,
             maxHeight = 6,
-            parsimony = 24.0,
+            parsimony = 0.01,
             crossoverBias = 0.9,
             subtreeReplaceChance = 0.10
         )
-        val solver  = new GA(popSize = 201, genMax = 1500, tournamentSize=18, eleitism=false)
+        val solver  = new GA(popSize = 1000, genMax = 5000, tournamentSize=4, eleitism=true)
 
         val best    = new ArrayBuffer[Double]()
         //val average = new ArrayBuffer[Double]()
@@ -68,16 +65,15 @@ object App {
                 println(ans)
                 println("Fitness: "+ans.fitness)
 
+/*                val tree  = ans.inspect.asInstanceOf[ExpNode]
+                testDS.show(tree.eval(_))*/
 
                 val tree  = ans.inspect.asInstanceOf[ExpNode]
-                testDS.show(tree.eval(_))
-
-/*                val tree  = ans.inspect.asInstanceOf[ExpNode]
                 val correctData = testDS.data.map(x => x._2)
                 val foundData = for((data,target) <- testDS.data) yield tree.eval(data)
                 val res = Seq(new ArrayDataSource("Correct", correctData.sorted),
                               new ArrayDataSource("Found"  , foundData.sorted))
-                (new GraphWindow(res)).startup(Array())*/
+                (new GraphWindow(res)).startup(Array())
             }
         }.start
 
