@@ -3,22 +3,33 @@ package com
 import com.Benchmark._
 import com.expTree._
 import com.graph._
+import com.CGP._
 import scala.util.Random
 import swing._
 import scala.collection.mutable.ArrayBuffer
 
-// cooler mutation
-// way to graph final function y vals
-// better regression tree paramaterization
 // clean up algebra and tree based solution creation?
 // write a tree simplify function
+
+/*
+Cleanup CGP nodes
+cleanup launch
+CGP optimization
+CGP transplant crossover
+CGP change op mutation
+Interpret final CGP results
+virtual velometer
+CGP change children mutation
+CGP vertical shift operator
+apply CGP techniques to RegressionTrees?
+*/
 
 object App {
     def main(args: Array[String]) {
         //val testDS  = DataSet.fromFunc(1, 50, 5.0){ x => Math.exp(x(0)) }
-        //val testDS  = DataSet.fromFunc(3, 50, 10.0){ x => x.map(y => y*y*y).sum }
+        val testDS  = DataSet.fromFunc(2, 50, 10.0){ x => x.map(y => y*y*y).sum }
         //val testDS = DataSet.fromFile("GPProjectData.csv")
-        val testDS = DataSet.fromFile("propData")
+        //val testDS = DataSet.fromFile("propData")
 /*        val testDS = new FitnessEval{
             val range = 100.0
             val inputCount = 2
@@ -38,14 +49,18 @@ object App {
             }
         }
 */
-        val problem = RegressionTree(testDS,
+/*        val problem = RegressionTree(testDS,
             fullHeight = 3,
             maxHeight = 6,
             parsimony = 0.01,
             crossoverBias = 0.9,
             subtreeReplaceChance = 0.10
-        )
-        val solver  = new GA(popSize = 1000, genMax = 5000, tournamentSize=4, eleitism=true)
+        )*/
+        val rand = new Random()
+        val problem = new CGP(testDS, NodeEval.ops:+new Constant(()=>rand.nextDouble()*10.0),100)
+
+        //val solver  = new GA(popSize = 100, genMax = 200, tournamentSize=4, eleitism=true)
+        val solver = new Annealing(100*200, 200.0f)
 
         val best    = new ArrayBuffer[Double]()
         //val average = new ArrayBuffer[Double]()
@@ -55,7 +70,7 @@ object App {
                 val fits = pop.map(x => x.fitness)
                 best    += fits.min
                 //average += fits.sorted.apply(fits.size/2)//fits.sum / pop.size.toDouble
-                size    += pop.map(x => x.inspect.asInstanceOf[ExpNode].size).sum / pop.size.toDouble
+                //size    += pop.map(x => x.inspect.asInstanceOf[ExpNode].size).sum / pop.size.toDouble
             }
         }
 
@@ -68,9 +83,9 @@ object App {
 /*                val tree  = ans.inspect.asInstanceOf[ExpNode]
                 testDS.show(tree.eval(_))*/
 
-                val tree  = ans.inspect.asInstanceOf[ExpNode]
+                //val func = ans.inspect.asInstanceOf[ExpNode]
                 val correctData = testDS.data.map(x => x._2)
-                val foundData = for((data,target) <- testDS.data) yield tree.eval(data)
+                val foundData = for((data,target) <- testDS.data) yield ans.eval(data)(0)
                 val res = Seq(new ArrayDataSource("Correct", correctData.sorted),
                               new ArrayDataSource("Found"  , foundData.sorted))
                 (new GraphWindow(res)).startup(Array())

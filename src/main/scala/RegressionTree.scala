@@ -13,6 +13,8 @@ object RegressionTree {
         subtreeReplaceChance: Double = 0.02
       ): Problem = {
 
+        assert(fit.outputCount == 1, "Regression tree's only support one output")
+
         val nodeSet = new Algebra {
             def randomConstantValue(): Double = ((rand.nextDouble()-0.5)*2.0)*fit.range
             def randomVarIndex() = rand.nextInt(fit.inputCount)
@@ -22,7 +24,7 @@ object RegressionTree {
                 def buildUsing(subs: Iterator[ExpNode]) = new Variable(randomVarIndex())
                 def eval(v: Any) = {
                     v match {
-                        case s: Seq[Double] => s(i)
+                        case s: Seq[Double @unchecked] => s(i)
                         case _ => throw new Exception()
                     }
                 }
@@ -48,7 +50,9 @@ object RegressionTree {
         class Tree(val t: ExpNode) extends Solution[Tree] {
             def inspect = t
             val fitness = {
-                val raw = fit(t.eval(_))
+                //fit((Seq[Double]) => Seq[Double]): Double
+                //t.eval(Seq[Double]): Double
+                val raw = fit( (s:Seq[Double]) => List(t.eval(s)) )
                 raw + (parsimony * t.size)
             }
             def mutate(): Tree = {

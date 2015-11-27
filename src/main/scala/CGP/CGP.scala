@@ -40,8 +40,8 @@ class CGP(
 
     class Grid(val nodes: Seq[Node]) extends Solution[Grid] {
         val inspect = nodes
-        lazy val fitness: Double = fit(evaluate(_))
-        def evaluate(input: Seq[Double]): Seq[Double] = {
+        lazy val fitness: Double = fit(eval(_))
+        def eval(input: Seq[Double]): Seq[Double] = {
             val cache = Array.fill[(Boolean, Double)](nodes.size)((false, 0.0))
             def evalNode(i: Int): Double = {
                 val v = nodes(i).calc(get)
@@ -57,7 +57,7 @@ class CGP(
                 }
             }
             val res = (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
-            println(cache.grouped(cols).map(_.mkString("\t")).mkString("\n"))
+            //println(cache.grouped(cols).map(_.mkString("\t")).mkString("\n"))
             res
         }
 

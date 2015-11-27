@@ -3,11 +3,26 @@ package com
 import scala.util.Random
 import scala.io.Source
 
+/*
+abstract class FitnessEval{
+    //returns scale of output values
+    val range: Double
+    //the size of input vectors associated with this function
+    val inputCount: Int
+    //the size of expected output vectors
+    val outputCount: Int
+    //returns fitness of given function
+    def apply(func: Seq[Double] => Seq[Double]) : Double
+}
+*/
+
+
 abstract class DataSet extends FitnessEval {
+    val outputCount = 1
     val data: Seq[(Seq[Double],Double)]
-    def apply(f: Seq[Double] => Double): Double = {
+    def apply(f: Seq[Double] => Seq[Double]): Double = {
         val ms = (for((data,target) <- data) yield {
-                    val ans  = f(data)
+                    val ans  = f(data)(0)
                     val diff = target - ans
                     diff*diff
                 }).sum
