@@ -12,7 +12,6 @@ import scala.collection.mutable.ArrayBuffer
 // write a tree simplify function
 
 /*
-Cleanup CGP nodes
 cleanup launch
 CGP optimization
 CGP transplant crossover
@@ -57,10 +56,10 @@ object App {
             subtreeReplaceChance = 0.10
         )*/
         val rand = new Random()
-        val problem = new CGP(testDS, NodeEval.ops:+new Constant(()=>rand.nextDouble()*10.0),100)
+        val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>rand.nextDouble()*10.0),1000)
 
-        //val solver  = new GA(popSize = 100, genMax = 200, tournamentSize=4, eleitism=true)
-        val solver = new Annealing(100*200, 200.0f)
+        val solver  = new GA(popSize = 100, genMax = 200, tournamentSize=4, eleitism=true)
+        //val solver = new Annealing(100*200, 50.0f)
 
         val best    = new ArrayBuffer[Double]()
         //val average = new ArrayBuffer[Double]()

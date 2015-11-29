@@ -5,15 +5,6 @@ import com.FitnessEval
 import com.Problem
 import com.Solution
 
-class Input
-case class In(val index: Int) extends Input
-case class Nd(val index: Int) extends Input
-
-abstract class Node{
-    def calc(get: Input  => Double): Double
-    def cons(child: () => Input): Node
-}
-
 class CGP(
   fit: FitnessEval,
   nodeset: Seq[Node],
@@ -108,43 +99,3 @@ class TestFit extends FitnessEval{
     def apply(func: Seq[Double] => Seq[Double]) : Double = 0
 }
 
-class Add(l: Input, r: Input) extends Node{
-    val chld = List(l, r)
-    def calc(get: Input => Double): Double = chld.map(get(_)).reduce(_+_)
-    def cons(child: () => Input): Node = new Add(child(), child())
-    override def toString(): String = chld.mkString("(","+",")")
-}
-
-class Constant(val gen: ()=>Double) extends Node {
-    val value = gen()
-    def calc(get: Input  => Double): Double = value
-    def cons(child: () => Input): Node = new Constant(gen)
-    override def toString(): String = "%1.2f" format value
-}
-
-class NodeEval(
-  val chld: Seq[Input],
-  numInput: Int,
-  name: String,
-  op: (Seq[Double]) => Double
-) extends Node {
-    def calc(get: Input  => Double): Double =
-        op(chld.map(get))
-    def cons(child: () => Input): Node =
-        new NodeEval(chld.map((x)=>child()), numInput, name, op)
-    override def toString(): String = chld.mkString("(", name, ")")
-}
-object NodeEval{
-    val rand = new Random()
-    def protectedDiv(n: Seq[Double]): Double = if(n(1) == 0.0) n(0) else n(0)/n(0)
-    def opSet(ops: Seq[(Int, (Seq[Double])=>Double, String)]): Seq[Node] = {
-        ops.map(o => {
-            new NodeEval( Vector.fill[Input](o._1)(In(0)),
-            o._1, o._3, o._2)
-        })
-    }
-    val ops = opSet(List( (2, (n:Seq[Double])=>n(0)+n(1), "+"),
-                          (2, (n:Seq[Double])=>n(0)*n(1), "*"),
-                          (2, (n:Seq[Double])=>n(0)-n(1), "-"),
-                          (2, protectedDiv(_), "/")            ))
-}

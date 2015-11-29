@@ -1,4 +1,6 @@
 :paste -raw ../Solution.scala
 :paste -raw ../FitnessEval.scala
+:paste -raw ../benchmark.scala
+:paste -raw ./Node.scala
 :paste -raw ./CGP.scala
 import com.CGP._
