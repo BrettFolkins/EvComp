@@ -31,8 +31,8 @@ class CGP(
 
     class Grid(val nodes: Seq[Node]) extends Solution[Grid] {
         val inspect = nodes
-        lazy val fitness: Double = fit(eval(_))
-        def eval(input: Seq[Double]): Seq[Double] = {
+        lazy val fitness: Double = fit(eval(_)._1)
+        def eval(input: Seq[Double]): (Seq[Double], Seq[(Boolean, Double)]) = {
             val cache = Array.fill[(Boolean, Double)](nodes.size)((false, 0.0))
             def evalNode(i: Int): Double = {
                 val v = nodes(i).calc(get)
@@ -49,15 +49,49 @@ class CGP(
             }
             val res = (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
             //println(cache.grouped(cols).map(_.mkString("\t")).mkString("\n"))
-            res
+            (res, cache)
         }
 
         def mutate(): Grid = CGP.this.mutate(this)
 
         def crossover(other: Grid): (Grid, Grid) = CGP.this.crossover(this, other)
 
-        override def toString(): String =
+        def showGrid: String =
             nodes.grouped(cols).map(_.mkString("\t")).mkString("\n")
+
+        def showEquation: String = {
+            val (_,used) = eval((1 to fit.inputCount).map(_.toDouble))
+            val (extrons,_) = nodes.zipWithIndex.filter{ case (_, i) => used(i)._1 }.unzip
+            //extrons.mkString("\n")
+
+            //filter to used Nodes's
+            //Nodes's used more than once get a name
+            //Nodes's used once becomes its print(...) string
+            //print nodes used more than once's print(...)
+
+            val usedInputs = extrons.flatMap(_.children)
+            val usedNds = usedInputs.filter(_.isInstanceOf[Nd])
+            val usedNodes = usedNds.map{ case Nd(x) => nodes(x) }
+
+            val plural = extrons.filter(n => usedNodes.count(_==n) > 1)
+
+            def prettyName(i: Int): String = ('A'.toInt+i).toChar.toString
+            val names = Map[Node,String](
+                plural.zipWithIndex.map{case (n,i) => (n -> prettyName(i))}:_*)
+
+            def build(n: Node): String = n.print(n.children.map(inputString(_)))
+            def nodeString(n: Node): String = names.getOrElse(n, build(n))
+            def inputString(i: Input): String = i match {
+                case In(x) => "X"+x
+                case Nd(x) => nodeString(nodes(x))
+            }
+
+            val subExprs = plural.map(n => names(n)+": "+build(n))
+            val outputs = nodes.takeRight(fit.outputCount).map(n => build(n))
+            (subExprs++:outputs).mkString("\n")
+        }
+
+        override def toString(): String = showEquation
     }
 
     def potential(): Grid = new Grid( (0 until rows*cols) map (randomNode(_)) )

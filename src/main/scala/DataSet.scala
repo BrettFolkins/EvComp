@@ -26,7 +26,7 @@ abstract class DataSet extends FitnessEval {
                     val diff = target - ans
                     diff*diff
                 }).sum
-        Math.sqrt(ms)
+        Math.sqrt(ms/(data.size.toDouble))
     }
 }
 

@@ -12,42 +12,53 @@ import scala.collection.mutable.ArrayBuffer
 // write a tree simplify function
 
 /*
-cleanup launch
-CGP optimization
-CGP transplant crossover
-CGP change op mutation
+real time based running limits
+CGP more ops
+    change operator mutation
+    change children mutation
+    noop crossover
+    transplant crossover
+    vertical shift
 Interpret final CGP results
+cleanup launch
 virtual velometer
-CGP change children mutation
-CGP vertical shift operator
 apply CGP techniques to RegressionTrees?
 */
 
 object App {
     def main(args: Array[String]) {
-        //val testDS  = DataSet.fromFunc(1, 50, 5.0){ x => Math.exp(x(0)) }
-        val testDS  = DataSet.fromFunc(2, 50, 10.0){ x => x.map(y => y*y*y).sum }
+/*        val testDS  = DataSet.fromFunc(4, 50, 10.0){ x =>
+            x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3)
+        }*/
+        //val testDS  = DataSet.fromFunc(2, 50, 10.0){ x => x.map(y => y*y).sum }
+        //val testDS  = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
         //val testDS = DataSet.fromFile("GPProjectData.csv")
         //val testDS = DataSet.fromFile("propData")
-/*        val testDS = new FitnessEval{
+        val testDS = new FitnessEval{
             val range = 100.0
-            val inputCount = 2
-            def calc(func: Seq[Double] => Double) : Seq[Double] = {
-                def control(q: Quad): Double =
-                    func(List(q.accelerometer, q.barometer))
-                    //func(List(q.position, q.velocity, q.acceleration))
+            val inputCount = 3
+            val outputCount = 2
+            def calc(func: Seq[Double] => Seq[Double]) : Seq[Double] = {
+
+                var momento: Double = 0.0
+                def control(q: Quad): Double ={
+                    val rtn = func(List(q.position, /*q.velocity,*/ q.acceleration, momento))
+                    momento = rtn(1)
+                    rtn(0)
+                }
+                    //func(List(q.accelerometer, q.barometer))
                 Quad.simulate(new Quad(), 10.0, control)
             }
-            def apply(func: Seq[Double] => Double) : Double = {
+            def apply(func: Seq[Double] => Seq[Double]) : Double = {
                 val results = calc(func)
                 results.map(x => (10-x)*(10-x)).sum
             }
-            def show(func: Seq[Double] => Double): Unit = {
+            def show(func: Seq[Double] => Seq[Double]): Unit = {
                 val results = calc(func)
                 (new GraphWindow(List(new ArrayDataSource("height",results)))).startup(Array())
             }
         }
-*/
+
 /*        val problem = RegressionTree(testDS,
             fullHeight = 3,
             maxHeight = 6,
@@ -56,9 +67,9 @@ object App {
             subtreeReplaceChance = 0.10
         )*/
         val rand = new Random()
-        val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>rand.nextDouble()*10.0),1000)
+        val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>rand.nextDouble()*10.0),200)
 
-        val solver  = new GA(popSize = 100, genMax = 200, tournamentSize=4, eleitism=true)
+        val solver  = new GA(popSize = 101, genMax = 6000, tournamentSize=4, eleitism=true)
         //val solver = new Annealing(100*200, 50.0f)
 
         val best    = new ArrayBuffer[Double]()
@@ -83,11 +94,12 @@ object App {
                 testDS.show(tree.eval(_))*/
 
                 //val func = ans.inspect.asInstanceOf[ExpNode]
-                val correctData = testDS.data.map(x => x._2)
-                val foundData = for((data,target) <- testDS.data) yield ans.eval(data)(0)
+/*                val correctData = testDS.data.map(x => x._2)
+                val foundData = for((data,target) <- testDS.data) yield ans.eval(data)._1(0)
                 val res = Seq(new ArrayDataSource("Correct", correctData.sorted),
                               new ArrayDataSource("Found"  , foundData.sorted))
-                (new GraphWindow(res)).startup(Array())
+                (new GraphWindow(res)).startup(Array())*/
+                testDS.show(ans.eval(_)._1)
             }
         }.start
 
