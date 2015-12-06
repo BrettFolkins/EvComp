@@ -4,9 +4,9 @@ import com.Benchmark._
 import com.CGP._
 import com.expTree._
 import com.graph._
+import com.Entropy.rand
 
 import scala.collection.mutable.ArrayBuffer
-import scala.util.Random
 import swing._
 
 // clean up algebra and tree based solution creation?
@@ -27,7 +27,6 @@ apply CGP techniques to RegressionTrees?
 */
 
 object App {
-    val rand = new Random()
     val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
     //val testDS = DataSet.fromFunc(2, 50, 10.0){ x => x.map(y => y*y).sum }
     //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }

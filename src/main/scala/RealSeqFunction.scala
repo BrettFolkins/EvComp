@@ -1,6 +1,6 @@
 package com
 
-import scala.util.Random
+import com.Entropy.rand
 
 trait RSFitness {
     def apply(dna: Seq[Float]) : Double
@@ -24,7 +24,6 @@ class RealSeqFunction(
             override def toString() = name+" "+dna.mkString("[",",","]")
         }
 
-        val rand = new Random()
         def validRand(): Float = (rand.nextFloat() * (max-min)) + (min)
         def initial(): Seq[Float] = Array.fill[Float](dim)(validRand())
 

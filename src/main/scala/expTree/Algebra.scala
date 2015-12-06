@@ -1,6 +1,6 @@
 package com.expTree
 
-import scala.util.Random
+import com.Entropy.rand
 
 abstract class Algebra {
     val elements: Seq[ExpNode]
@@ -8,8 +8,6 @@ abstract class Algebra {
     def randomConstantValue(): Double
 
     lazy val (terminals, nonterminals) = elements.partition(x => x.terminal)
-
-    val rand = new Random()
 
     def randomElement[U](xs: Seq[U]): U = xs(rand.nextInt(xs.size))
 

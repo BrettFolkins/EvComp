@@ -2,7 +2,7 @@ package com
 
 import com.expTree._
 
-import scala.util.Random
+import com.Entropy.rand
 
 object RegressionTree {
     def apply(fit: FitnessEval,
@@ -56,11 +56,11 @@ object RegressionTree {
                 raw + (parsimony * t.size)
             }
             def mutate(): Tree = {
-                val r = nodeSet.rand.nextDouble;
+                val r = rand.nextDouble;
                 if(r <= subtreeReplaceChance) {
                     //replace random subtree
                     val newSubtree = (new Sapling(maxHeight,fullHeight)).next()
-                    val toReplace  = nodeSet.rand.nextInt(t.size)
+                    val toReplace  = rand.nextInt(t.size)
                     new Tree(t.replaceSubtree(toReplace,newSubtree))
                 } else {
                     this

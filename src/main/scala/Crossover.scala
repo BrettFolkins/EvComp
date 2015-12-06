@@ -1,6 +1,6 @@
 package com
 
-import scala.util.Random
+import com.Entropy.rand
 
 trait RSCrossover {
     def apply(a: Seq[Float], b: Seq[Float]): (Seq[Float], Seq[Float])
@@ -12,7 +12,6 @@ class NullCrossover extends RSCrossover{
 }
 
 class TwoPointCrossover extends RSCrossover {
-    val rand = new Random()
     def apply(a: Seq[Float], b: Seq[Float]): (Seq[Float], Seq[Float]) = {
         val len = Math.min(a.size, b.size)
         val (spA,spB) = {
@@ -28,7 +27,6 @@ class TwoPointCrossover extends RSCrossover {
 }
 
 class ArithmeticCrossover(range: Float) extends RSCrossover {
-    val rand = new Random()
     def apply(a: Seq[Float], b: Seq[Float]): (Seq[Float], Seq[Float]) = {
         (a zip b).map{ case (x, y) =>
             val r = rand.nextFloat * range
@@ -38,7 +36,6 @@ class ArithmeticCrossover(range: Float) extends RSCrossover {
 }
 
 class UniformCrossover(flipChance: Float) extends RSCrossover {
-    val rand = new Random()
     def apply(a: Seq[Float], b: Seq[Float]): (Seq[Float], Seq[Float]) = {
         (a zip b).map{ case (x, y) =>
             if(rand.nextFloat < flipChance) (y, x)

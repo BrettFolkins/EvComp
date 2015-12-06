@@ -1,6 +1,6 @@
 package com
 
-import java.util.Random
+import com.Entropy.rand
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.ListBuffer
 
@@ -10,8 +10,6 @@ class Quad(
     val accelSDV: Double = 0.1,  //feet per second^2
     val baroSDV: Double = 1      //feet
   ) {
-    private val rand = new Random()
-
     var position: Double = 0.0
     var velocity: Double = 0.0
     var acceleration: Double = 0.0

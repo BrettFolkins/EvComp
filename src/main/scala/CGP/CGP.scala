@@ -1,6 +1,7 @@
 package com.CGP
 
-import java.util.concurrent.ThreadLocalRandom
+//import java.util.concurrent.ThreadLocalRandom
+import com.Entropy.rand
 import com.FitnessEval
 import com.Problem
 import com.Solution
@@ -15,7 +16,7 @@ class CGP(
 ) extends Problem {
     type SolutionType = Grid
 
-    def rand = ThreadLocalRandom.current()
+    //def rand = ThreadLocalRandom.current()
 
     def rIndex(): Int = rand.nextInt(rows*cols)
 

@@ -1,7 +1,8 @@
 package com
 
+import com.Entropy.rand
+
 import scala.collection.generic.CanBuildFrom
-import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 
 class GA (
@@ -44,7 +45,7 @@ class GA (
 
         val size = xs.size
         for(x <- 1 to num)
-            nb += xs(GA.rand.nextInt(size))
+            nb += xs(rand.nextInt(size))
 
         nb.result()
     }
@@ -60,9 +61,4 @@ class GA (
         val bracket = randomTake(xs, num)
         bracket.max(ord)
     }
-}
-
-object GA {
-    private val rand = new Random()
-
 }
