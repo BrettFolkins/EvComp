@@ -1,6 +1,6 @@
 package com.CGP
 
-import java.util.Random
+import java.util.concurrent.ThreadLocalRandom
 import com.FitnessEval
 import com.Problem
 import com.Solution
@@ -14,7 +14,8 @@ class CGP(
   mutateChance: Double = 0.05
 ) extends Problem {
     type SolutionType = Grid
-    val rand = new Random()
+
+    def rand = ThreadLocalRandom.current()
 
     def rIndex(): Int = rand.nextInt(rows*cols)
 
@@ -32,6 +33,7 @@ class CGP(
     class Grid(val nodes: Seq[Node]) extends Solution[Grid] {
         val inspect = nodes
         lazy val fitness: Double = fit(eval(_)._1)
+
         def eval(input: Seq[Double]): (Seq[Double], Seq[(Boolean, Double)]) = {
             val cache = Array.fill[(Boolean, Double)](nodes.size)((false, 0.0))
             def evalNode(i: Int): Double = {
@@ -47,6 +49,7 @@ class CGP(
                     else evalNode(i)
                 }
             }
+
             val res = (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
             //println(cache.grouped(cols).map(_.mkString("\t")).mkString("\n"))
             (res, cache)
@@ -113,7 +116,7 @@ class CGP(
          new Grid(bn.patch(l, an.view(l,r), diff)) )
     }
 
-    def replaceNode()(o: Grid): Grid = {
+    def replaceNode(o: Grid): Grid = {
         val index = rIndex();
         new Grid(o.nodes.updated(index, randomNode(index)))
     }
