@@ -16,8 +16,6 @@ class CGP(
 ) extends Problem {
     type SolutionType = Grid
 
-    //def rand = ThreadLocalRandom.current()
-
     def rIndex(): Int = rand.nextInt(rows*cols)
 
     def randomNode(index: Int): Node = {
@@ -33,27 +31,34 @@ class CGP(
 
     class Grid(val nodes: Seq[Node]) extends Solution[Grid] {
         val inspect = nodes
-        lazy val fitness: Double = fit(eval(_)._1)
 
-        def eval(input: Seq[Double]): (Seq[Double], Seq[(Boolean, Double)]) = {
-            val cache = Array.fill[(Boolean, Double)](nodes.size)((false, 0.0))
-            def evalNode(i: Int): Double = {
-                val v = nodes(i).calc(get)
-                cache(i) = (true, v)
-                v
-            }
+        lazy val fitness: Double = fit(eval(_))
+
+        def eval(input: Seq[Double]): Seq[Double] = {
             def get(n: Input): Double = n match {
                 case In(i) => input(i)
-                case Nd(i) => {
-                    val v = cache(i)
-                    if(v._1) v._2
-                    else evalNode(i)
-                }
+                case Nd(i) => evalNode(i)
+            }
+            def evalNode(i: Int): Double = nodes(i).calc(get)
+
+            (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
+        }
+
+        def mark(): Seq[Boolean] = {
+            val cache = Array.fill[Boolean](nodes.size)(false)
+
+            def walk(n: Node): Unit = {
+                n.children.foreach(_ match {
+                    case Nd(i) => {
+                        cache(i) = true
+                        walk(nodes(i))
+                    }
+                    case _ => ()
+                })
             }
 
-            val res = (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
-            //println(cache.grouped(cols).map(_.mkString("\t")).mkString("\n"))
-            (res, cache)
+            nodes.takeRight(fit.outputCount).foreach(walk)
+            cache
         }
 
         def mutate(): Grid = CGP.this.mutate(this)
@@ -64,8 +69,8 @@ class CGP(
             nodes.grouped(cols).map(_.mkString("\t")).mkString("\n")
 
         def showEquation: String = {
-            val (_,used) = eval((1 to fit.inputCount).map(_.toDouble))
-            val (extrons,_) = nodes.zipWithIndex.filter{ case (_, i) => used(i)._1 }.unzip
+            val used = mark()
+            val (extrons,_) = nodes.zipWithIndex.filter{ case (_, i) => used(i) }.unzip
             //extrons.mkString("\n")
 
             //filter to used Nodes's
