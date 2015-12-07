@@ -13,17 +13,24 @@ class GA (
   ) extends Optimizer {
 
     def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
-        var pop = Vector.fill[p.SolutionType](popSize)(p.potential())
+        var pop = List.fill[p.SolutionType](popSize)(p.potential())
 
         for(i <- 0 until genMax){
             val newPop = (1 to popSize by 2 par).map{ x =>
                 val parentA = tournament(pop, tournamentSize)(MinOrd)
                 val parentB = tournament(pop, tournamentSize)(MinOrd)
-                val (childA, childB) = parentA.crossover(parentB)
-                List(childA.mutate(), childB.mutate())
-            }.flatten.to[Vector]
 
-            pop = if(eleitism) (newPop :+ pop.max(MinOrd))
+                val (childA, childB) = parentA.crossover(parentB)
+                val (mchildA, mchildB) = (childA.mutate(), childB.mutate())
+
+                //calculate fitness while parallel - children should memoize it
+                mchildA.fitness
+                mchildB.fitness
+
+                List(mchildA, mchildB)
+            }.flatten.to[List]
+
+            pop = if(eleitism) (pop.max(MinOrd) +: newPop)
                   else newPop
 
             ds log pop
