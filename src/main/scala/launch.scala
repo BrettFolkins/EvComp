@@ -57,26 +57,24 @@ object App {
     }*/
 
 
-    /*val problem = RegressionTree(testDS,
+/*    val problem = RegressionTree(testDS,
             fullHeight = 3,
             maxHeight = 6,
             parsimony = 0.01,
             crossoverBias = 0.9,
             subtreeReplaceChance = 0.10
         )*/
-    val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>rand.nextDouble()*10.0),100)
+    val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>rand.nextDouble()*10.0), 100)
     val solver = new GA(popSize = 101, genMax = 1000, tournamentSize=4, eleitism=true)
     //val solver = new Annealing(100*200, 50.0f)
 
     val best    = new ArrayBuffer[Double]()
     //val average = new ArrayBuffer[Double]()
-    val size    = new ArrayBuffer[Double]()
     val Diag = new Diagnostic[problem.SolutionType]{
         def log(pop: Seq[problem.SolutionType]) {
             val fits = pop.map(x => x.fitness)
             best    += fits.min
             //average += fits.sorted.apply(fits.size/2)//fits.sum / pop.size.toDouble
-            //size    += pop.map(x => x.inspect.asInstanceOf[ExpNode].size).sum / pop.size.toDouble
         }
     }
 
@@ -91,7 +89,7 @@ object App {
                 //val tree  = ans.inspect.asInstanceOf[ExpNode]
 
                 //testDS.show(tree.eval(_))
-                //testDS.show(ans.eval(_)._1)
+                //testDS.show(ans.eval(_))
 
 /*                val correctData = testDS.data.map(x => x._2)
                 val foundData = for((data,target) <- testDS.data) yield ans.eval(data)._1(0)
