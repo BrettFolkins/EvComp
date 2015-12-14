@@ -39,7 +39,8 @@ class GA (
         pop.max(MinOrd)
     }
 
-    override def toString() = "GA"
+    override def toString() =
+        s"GA w/ popSize $popSize, genMax $genMax, tournamentSize $tournamentSize, eleitism $eleitism"
 
     /**
      * Takes a random sampling of `num` elements from `xs` with replacement

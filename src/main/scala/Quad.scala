@@ -21,6 +21,10 @@ class Quad(
         velocity     = velocity + acceleration*dt //feet per second
         position     = Math.max(0, position + velocity*dt) //feet
         time += dt //seconds
+
+        assert(!position.isNaN)
+        assert(!velocity.isNaN)
+        assert(!acceleration.isNaN)
     }
 
     def accelerometer: Double = { //feet per second^2
@@ -30,6 +34,9 @@ class Quad(
     def barometer: Double = { //feet
         position + rand.nextGaussian()*baroSDV
     }
+
+    override def toString: String =
+        "Pos: %f,\tVel: %f,\tAcc: %f,\tt: %f".format(position, velocity, acceleration, time)
 }
 
 object Quad{

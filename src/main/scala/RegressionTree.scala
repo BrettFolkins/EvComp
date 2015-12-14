@@ -49,9 +49,7 @@ object RegressionTree {
 
         class Tree(val t: ExpNode) extends Solution[Tree] {
             def inspect = t
-            val fitness = {
-                //fit((Seq[Double]) => Seq[Double]): Double
-                //t.eval(Seq[Double]): Double
+            lazy val fitness = {
                 val raw = fit( (s:Seq[Double]) => List(t.eval(s)) )
                 raw + (parsimony * t.size)
             }

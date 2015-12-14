@@ -16,6 +16,9 @@ class CGP(
 ) extends Problem {
     type SolutionType = Grid
 
+    override def toString =
+        s"CGP with $rows rows, $cols columns, $depth depth, $mutateChance mutateChance"
+
     def rIndex(): Int = rand.nextInt(rows*cols)
 
     def randomNode(index: Int): Node = {

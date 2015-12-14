@@ -62,7 +62,7 @@ object Node{
     implicit def NaryOpWrapper( o: (Int, (Seq[Double]) => Double, String) ): Node =
         new NaryNode(Nil, o._1, o._2, o._3)
 
-    def protectedDiv(n: Double, d: Double): Double = if(d != 0) n/d else n
+    def protectedDiv(n: Double, d: Double): Double = if(d != 0.0) n/d else n
 
     val algebraOps: Seq[Node] = List(((x:Double, y:Double)=>x+y , "+"),
                                      ((x:Double, y:Double)=>x*y , "*"),
