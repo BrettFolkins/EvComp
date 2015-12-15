@@ -29,29 +29,34 @@ object Expiriment {
              data.last)
     }
 
-    /*
-    popSize=201, genMax=2000, tournamentSize=4
-    popSize=201, genMax=2000, tournamentSize=4, NoCrossover
-    popSize=5, genMax=50*2000, tournamentSize=5, NoCrossover
-    */
+    val littleGA = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
 
-    def genProblem(mrate: Double) =
+    val bigGA = new GA(popSize=201, genMax=2000, tournamentSize=4, eleitism=true)
+
+    def noCrossover(mrate: Double): Problem =
         new CGP(testDS, nodeSet, rows = 512, mutateChance = mrate) with NoCrossover
-        //new CGP(testDS, nodeSet, rows = 512, mutateChance = mrate)
 
-    //val solver  = new GA(popSize=201, genMax=2000, tournamentSize=4, eleitism=true)
-    val solver  = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
+    def withCrossover(mrate: Double): Problem =
+        new CGP(testDS, nodeSet, rows = 512, mutateChance = mrate)
 
-    val expiriment = "NoCrossover(4+1)"
+    val expiriments = List(
+        ("NoCrossover_4+1", littleGA, noCrossover(_)),
+        ("NoCrossover_201", bigGA,    noCrossover(_)),
+        ("Crossover_201",   bigGA,    withCrossover(_)),
+        ("Crossover_4-1",   littleGA, withCrossover(_))
+    )
 
-    def main(args: Array[String]) {
-        val log     = new PrintWriter(new File(expiriment+".log"))
-        val results = new PrintWriter(new File(expiriment+".data"))
+    def doExpiriment(ename: String, solver: Optimizer, genProblem: (Double)=>Problem):Unit = {
+        val log     = new PrintWriter(new File(ename+".log"))
+        val results = new PrintWriter(new File(ename+".data"))
+
+        log.write(genProblem(0.01)+"\n")
+        log.write(solver+"\n")
 
         val (data, t) = time{
             for(mrate <- (0.01 to 0.16 by 0.01)) yield {
                 val problem = genProblem(mrate)
-                val fits = (1 to 20).map(_.toDouble)//.map(x => solver(problem).fitness).sort
+                val fits = (1 to 20).map(x => solver(problem).fitness)
                 val res = fits.mkString("[",",","]")
                 log.write(s"$mrate $res\n")
                 (mrate, fits)
@@ -67,5 +72,9 @@ object Expiriment {
 
         log.close
         results.close
+    }
+
+    def main(args: Array[String]) {
+        for((name, ga, problem) <- expiriments) doExpiriment(name, ga, problem)
     }
 }
