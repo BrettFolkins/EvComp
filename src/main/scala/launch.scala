@@ -42,18 +42,19 @@ object App {
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
     //val testDS = DataSet.fromFunc(2, 50, 10.0){ x => x.map(y => y*y).sum }
     //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
-    //val testDS = DataSet.fromFile("GPProjectData.csv")
+    val testDS = DataSet.fromFile("GPProjectData.csv")
     //val testDS = DataSet.fromFile("propData")
 
-    val testDS = new FitnessEval{
+/*    val testDS = new FitnessEval{
         val range = 100.0
         val recCount    = 3
         val inputCount  = 3 + recCount
         val outputCount = 1 + recCount
         val runningTime = 10.0
+        val numAverage  = 50
 
         override def toString =
-            s"Quad Sim for $runningTime seconds with $recCount recurrent terms"
+            s"Quad Sim for $runningTime seconds with $recCount recurrent terms, averaging $numAverage trials"
 
         def clean(d: Double): Double =
             if( (d isInfinity) || (d isNaN) ) 0.0 else d
@@ -94,7 +95,7 @@ object App {
                 Math.sqrt(results.map{ case (pos, set) => (pos-set)*(pos-set) }.sum)
             }
 
-            (1 to 50).map(x => score()).sum / 50.0
+            (1 to numAverage).map(x => score()).sum / numAverage.toDouble
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
             val (pos, set) = calc(func).unzip
@@ -102,13 +103,14 @@ object App {
                            new ArrayDataSource("Setpoint", set) )
             graph(data)
         }
-    }
+    }*/
 
+    def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
+    val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
+                            rows = 500, mutateChance = 0.10) with NoCrossover
 
-    val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>rand.nextDouble()*10.0),
-                            rows = 128, mutateChance = 0.01)
-
-    val solver  = new GA(popSize=51, genMax=10, tournamentSize=4, eleitism=false)
+    //val solver  = new GA(popSize=201, genMax=2000, tournamentSize=4, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val Diag = new Diagnostic[problem.SolutionType]{
@@ -138,7 +140,7 @@ object App {
                     s"""|Solved : $testDS
                         |Using  : $problem
                         |Running: $solver
-                        |seconds: $seconds
+                        |Seconds: $seconds
                         |Fitness: ${ans.fitness}
                         |Answer:
                         |$ans
@@ -154,7 +156,7 @@ object App {
                 val bestDS = new ArrayDataSource("Best", best)
                 val graphs: Seq[(Graph,String,ViewSpec)] =
                     List( (graph(List(bestDS)),      "Fitness",new RTViewSpec(80.0f, -500.0f))
-                         ,(testDS.show(func.eval(_)),"Results",new RTViewSpec(20.0f, -500.0f))
+                          //,(testDS.show(func.eval(_)),"Results",new RTViewSpec(20.0f, -500.0f))
                           )
                 for((g,name,vs) <- graphs){
                     g.setViewSpec(vs)
@@ -164,13 +166,13 @@ object App {
                 }
             }
         }.start
-/*
+
         //live data
         val data = Seq(new ArrayDataSource("Best", best))
                        //new ArrayDataSource("Median", average),
                        //new ArrayDataSource("Size", size))
         (new GraphWindow(data)).startup(Array())
-*/    }
+    }
 
     def main(args: Array[String]) {
         optimize()
@@ -180,9 +182,7 @@ object App {
 class GraphWindow(val dataSets: Seq[DataSource]) extends SimpleSwingApplication{
     def top = new MainFrame{
         title = "Optimizer"
-        val aL = new java.util.ArrayList[DataSource]()
-        for(ds <- dataSets) aL.add(ds)
-        contents = Component.wrap(new Graph(aL, true))
+        contents = Component.wrap(App.graph(dataSets))
     }
 }
 
