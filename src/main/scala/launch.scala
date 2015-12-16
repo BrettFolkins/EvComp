@@ -107,10 +107,10 @@ object App {
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
-                            rows = 500, mutateChance = 0.10) with NoCrossover
+                            rows = 500, mutateChance = 0.06) //with NoCrossover
 
-    //val solver  = new GA(popSize=201, genMax=2000, tournamentSize=4, eleitism=true)
-    val solver  = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
+    val solver  = new GA(popSize=201, genMax=2000, tournamentSize=4, eleitism=true)
+    //val solver  = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val Diag = new Diagnostic[problem.SolutionType]{

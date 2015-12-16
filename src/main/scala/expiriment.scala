@@ -54,9 +54,9 @@ object Expiriment {
         log.write(solver+"\n")
 
         val (data, t) = time{
-            for(mrate <- (0.01 to 0.16 by 0.01)) yield {
+            for(mrate <- (0.01 to 0.1501 by 0.01)) yield {
                 val problem = genProblem(mrate)
-                val fits = (1 to 20).map(x => solver(problem).fitness)
+                val fits = (1 to 20).map(_.toDouble)//.map(x => solver(problem).fitness)
                 val res = fits.mkString("[",",","]")
                 log.write(s"$mrate $res\n")
                 (mrate, fits)
