@@ -4,6 +4,7 @@ import com.Entropy.rand
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable.ArrayBuffer
+import scala.language.higherKinds
 
 class GA (
     popSize: Int = 100,
