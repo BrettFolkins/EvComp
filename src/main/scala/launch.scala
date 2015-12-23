@@ -1,11 +1,12 @@
 package com
 
-import com.Benchmark._
 import com.CGP._
-import com.Entropy.rand
 import com.expTree._
 import com.graph._
-import com.GraphUtils._
+import com.util.Chart
+import com.util.Chart._
+import com.util.Benchmark._
+import com.util.Entropy.rand
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
@@ -32,8 +33,33 @@ virtual velometer
 apply CGP techniques to RegressionTrees?
 */
 
-object App {
+/*
+expririment.scala
+launch.scala
 
+FitnessEval.scala
+Optimizer.scala
+Solution.scala
+
+Annealing.scala
+GA.scala
+HillClimb.scala
+
+benchmark.scala
+Entropy.scala
+GraphUtils.scala
+DataSet.scala
+
+Quad.scala
+
+CGP/
+
+RealSeqFunction/
+
+expTree/
+*/
+
+object App {
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x.map(y => y*y).sum }
     //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
@@ -94,7 +120,7 @@ object App {
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
             val (pos, set) = calc(func).unzip
-            chart(("Position", pos), ("Setpoint", set))
+            Chart(("Position", pos), ("Setpoint", set))
         }
     }
 
@@ -137,7 +163,7 @@ object App {
                 pw.close();
 
                 val charts: Seq[(Graph,String,ViewSpec)] =
-                    List((chart(("Best",best)),     "Fitness",new RTViewSpec(80.0f, 40.0f)),
+                    List((Chart(("Best",best)),     "Fitness",new RTViewSpec(80.0f, 40.0f)),
                          (show(testDS,soln.eval(_)),"Results",new RTViewSpec(20.0f, 10.0f)) )
                 for((g,name,vs) <- charts){
                     g.setViewSpec(vs)
@@ -148,7 +174,7 @@ object App {
             }
         }.start
 
-        (new GraphWindow( Seq(("Best", best)) )).startup(Array())
+        //(new GraphWindow( Seq(("Best", best)) )).startup(Array())
     }
 
     def main(args: Array[String]) = optimize()

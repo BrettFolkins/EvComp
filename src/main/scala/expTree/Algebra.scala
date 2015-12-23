@@ -1,6 +1,6 @@
 package com.expTree
 
-import com.Entropy.rand
+import com.util.Entropy.rand
 
 abstract class Algebra {
     val elements: Seq[ExpNode]

@@ -1,6 +1,6 @@
 package com.RealSeqFunction
 
-import com.Entropy.rand
+import com.util.Entropy.rand
 import com.Problem
 import com.Solution
 

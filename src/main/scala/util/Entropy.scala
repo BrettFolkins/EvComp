@@ -1,7 +1,7 @@
-package com
+package com.util
 
 import java.util.concurrent.ThreadLocalRandom
 
-package object Entropy {
+object Entropy {
     def rand = ThreadLocalRandom.current()
 }

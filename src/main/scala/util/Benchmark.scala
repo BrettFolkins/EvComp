@@ -1,4 +1,4 @@
-package com
+package com.util
 
 object Benchmark{
     def time[T](func: => T): (T, Double) = {

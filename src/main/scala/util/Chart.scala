@@ -1,13 +1,15 @@
-package com
+package com.util
 
+import com.FitnessEval
+import com.DataSet
 import com.graph._
 import swing._
 
-object GraphUtils {
+object Chart {
     implicit def DataSourcePromoter(v: (String, Seq[Double])): DataSource =
         new ArrayDataSource(v._1, v._2)
 
-    def chart(dataSets: DataSource*): Graph = {
+    def apply(dataSets: DataSource*): Graph = {
         val aL = new java.util.ArrayList[DataSource]()
         for(ds <- dataSets) aL.add(ds)
         new Graph(aL, true)
@@ -25,16 +27,16 @@ object GraphUtils {
             case ds: DataSet => {
                 val correctData = ds.data.map(x => x._2)
                 val foundData = for((data,target) <- ds.data) yield func(data)(0)
-                chart( ("Correct", correctData.sorted), ("Found", foundData.sorted) )
+                Chart( ("Correct", correctData.sorted), ("Found", foundData.sorted) )
             }
-            case _ => chart(("No graph conversion found", Nil))
+            case _ => Chart(("No graph conversion found", Nil))
         }
     }
 
-    class GraphWindow(val dataSets: Seq[DataSource]) extends SimpleSwingApplication{
+    class ChartWindow(val dataSets: Seq[DataSource]) extends SimpleSwingApplication{
         def top = new MainFrame{
             title = "Optimizer"
-            contents = Component.wrap(chart(dataSets:_*))
+            contents = Component.wrap(Chart(dataSets:_*))
         }
     }
 

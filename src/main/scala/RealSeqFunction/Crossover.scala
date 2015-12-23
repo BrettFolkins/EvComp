@@ -1,6 +1,6 @@
 package com.RealSeqFunction
 
-import com.Entropy.rand
+import com.util.Entropy.rand
 
 trait RSCrossover {
     def apply(a: Seq[Float], b: Seq[Float]): (Seq[Float], Seq[Float])

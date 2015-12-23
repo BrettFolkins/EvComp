@@ -1,6 +1,6 @@
 package com
 
-import com.Entropy.rand
+import com.util.Entropy.rand
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.ListBuffer
 

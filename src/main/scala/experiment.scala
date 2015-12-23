@@ -1,10 +1,10 @@
 package com
 
-import com.Benchmark._
 import com.CGP._
 import com.expTree._
 import com.graph._
-import com.Entropy.rand
+import com.util.Benchmark._
+import com.util.Entropy.rand
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
@@ -14,7 +14,7 @@ import java.io._
 import javax.imageio._
 import java.awt.image.BufferedImage
 
-object Expiriment {
+object Experiment {
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
     val testDS = DataSet.fromFile("GPProjectData.csv")
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range

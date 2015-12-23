@@ -1,7 +1,7 @@
 package com.CGP
 
 //import java.util.concurrent.ThreadLocalRandom
-import com.Entropy.rand
+import com.util.Entropy.rand
 import com.FitnessEval
 import com.Problem
 import com.Solution

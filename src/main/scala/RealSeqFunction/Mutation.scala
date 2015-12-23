@@ -1,6 +1,6 @@
 package com.RealSeqFunction
 
-import com.Entropy.rand
+import com.util.Entropy.rand
 
 trait RSMutate {
     def apply(dna: Seq[Float], min: Float, max: Float): Seq[Float]

@@ -1,8 +1,10 @@
-package com
+package com.expTree
 
 import com.expTree._
-
-import com.Entropy.rand
+import com.Problem
+import com.Solution
+import com.FitnessEval
+import com.util.Entropy.rand
 
 object RegressionTree {
     def apply(fit: FitnessEval,
