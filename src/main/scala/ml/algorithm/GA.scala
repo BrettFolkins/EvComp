@@ -6,6 +6,7 @@ import com.ml._
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable.ArrayBuffer
 import scala.language.higherKinds
+import scala.util.control.Breaks._
 
 class GA (
     popSize: Int = 100,
@@ -17,7 +18,7 @@ class GA (
     def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
         var pop = List.fill[p.SolutionType](popSize)(p.potential())
 
-        for(i <- 0 until genMax){
+        breakable { for(i <- 0 until genMax) {
             val newPop = (1 to popSize by 2 par).map{ x =>
                 val parentA = tournament(pop, tournamentSize)(MinOrd)
                 val parentB = tournament(pop, tournamentSize)(MinOrd)
@@ -36,7 +37,8 @@ class GA (
                   else newPop
 
             ds log pop
-        }
+            if(ds.finished) break
+        }}
 
         pop.max(MinOrd)
     }

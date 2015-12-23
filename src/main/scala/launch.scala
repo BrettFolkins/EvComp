@@ -30,19 +30,19 @@ CGP more ops
     transplant crossover
     vertical shift
 Interpret final CGP results
-cleanup launch
 virtual velometer
+refactor quadcopter simulator
 apply CGP techniques to RegressionTrees?
 */
 
 object App {
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
-    //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x.map(y => y*y).sum }
+    val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x.map(y => y*y).sum }
     //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
     //val testDS = DataSet.fromFile("resources/GPProjectData.csv")
     //val testDS = DataSet.fromFile("resources/propData")
 
-    val testDS = new FitnessEvalwShow{
+/*    val testDS = new FitnessEvalwShow{
         val range = 100.0
         val recCount    = 3
         val inputCount  = 3 + recCount
@@ -98,59 +98,65 @@ object App {
             val (pos, set) = calc(func).unzip
             Chart(("Position", pos), ("Setpoint", set))
         }
-    }
+    }*/
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
-                            rows = 500, mutateChance = 0.06) with NoCrossover
+                            rows = 500, mutateChance = 0.09) with NoCrossover
 
-    val solver  = new GA(popSize=5, genMax=20, tournamentSize=4, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=20000, tournamentSize=4, eleitism=true)
     //val solver  = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
-    val Diag = new Diagnostic[problem.SolutionType]{
+    val dgns = new Diagnostic[problem.SolutionType]{
+        var count = 0
         def log(pop: Seq[problem.SolutionType]) {
             val fits = pop.map(x => x.fitness)
             best    += fits.min
+            count += 1
         }
+        override def finished: Boolean = (count>200)
+        override def toString: String =
+            if(finished) s"Finished early after $count generations"
+            else s"Ran to completion"
     }
 
-    def optimize() {
+    def optimize(): Unit = {
         new Thread {
-            override def run() = {
-                val (ans,seconds) = time{ solver(problem)(Diag) }
-                val soln = ans //ans.inspect.asInstanceOf[ExpNode]
-
-                val results =
-                    s"""|Solved : $testDS
-                        |Using  : $problem
-                        |Running: $solver
-                        |Seconds: $seconds
-                        |Fitness: ${ans.fitness}
-                        |Answer:
-                        |$ans
-                        |""".stripMargin
-                println(results)
-
-                val handle = s"./results/${Calendar.getInstance().getTimeInMillis()}/"
-                (new File(handle)).mkdir()
-                val pw = new PrintWriter(new File(handle+"data.txt"))
-                pw.write(results)
-                pw.close();
-
-                val charts: Seq[(Graph,String,ViewSpec)] =
-                    List((Chart(("Best",best)),     "Fitness",new RTViewSpec(80.0f, 40.0f)),
-                         (show(testDS,soln.eval(_)),"Results",new RTViewSpec(20.0f, 10.0f)) )
-                for((g,name,vs) <- charts){
-                    g.setViewSpec(vs)
-                    val img = g.render(1080,1920);
-                    val out = new File(handle+name+".png");
-                    ImageIO.write(img, "png", out);
-                }
-            }
+            override def run() =
+                (new ChartWindow( Seq(("Best", best)) )).startup(Array())
         }.start
 
-        //(new GraphWindow( Seq(("Best", best)) )).startup(Array())
+        val (ans,seconds) = time{ solver(problem)(dgns) }
+        val soln = ans //ans.inspect.asInstanceOf[ExpNode]
+
+        val results =
+            s"""|Solved : $testDS
+                |Using  : $problem
+                |Running: $solver
+                |Seconds: $seconds
+                |Fitness: ${ans.fitness}
+                |Status : $dgns
+                |Answer:
+                |$ans
+                |""".stripMargin
+        println(results)
+
+        val handle = s"./results/${Calendar.getInstance().getTimeInMillis()}/"
+        (new File(handle)).mkdir()
+        val pw = new PrintWriter(new File(handle+"data.txt"))
+        pw.write(results)
+        pw.close();
+
+        val charts: Seq[(Graph,String,ViewSpec)] =
+            List((Chart(("Best",best)),     "Fitness",new RTViewSpec(80.0f, 40.0f)),
+                 (show(testDS,soln.eval(_)),"Results",new RTViewSpec(20.0f, 10.0f)) )
+        for((g,name,vs) <- charts){
+            g.setViewSpec(vs)
+            val img = g.render(1080,1920);
+            val out = new File(handle+name+".png");
+            ImageIO.write(img, "png", out);
+        }
     }
 
     def main(args: Array[String]) = optimize()
