@@ -2,9 +2,10 @@ package com
 
 import com.Benchmark._
 import com.CGP._
+import com.Entropy.rand
 import com.expTree._
 import com.graph._
-import com.Entropy.rand
+import com.GraphUtils._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
@@ -13,7 +14,6 @@ import java.util.Calendar
 import java.io._
 import javax.imageio._
 import java.awt.image.BufferedImage
-
 
 // clean up algebra and tree based solution creation?
 // write a tree simplify function
@@ -33,19 +33,14 @@ apply CGP techniques to RegressionTrees?
 */
 
 object App {
-    def graph(dataSets: Seq[DataSource]): Graph = {
-        val aL = new java.util.ArrayList[DataSource]()
-        for(ds <- dataSets) aL.add(ds)
-        new Graph(aL, true)
-    }
 
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
-    //val testDS = DataSet.fromFunc(2, 50, 10.0){ x => x.map(y => y*y).sum }
+    //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x.map(y => y*y).sum }
     //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
-    val testDS = DataSet.fromFile("GPProjectData.csv")
+    //val testDS = DataSet.fromFile("GPProjectData.csv")
     //val testDS = DataSet.fromFile("propData")
 
-/*    val testDS = new FitnessEval{
+    val testDS = new FitnessEvalwShow{
         val range = 100.0
         val recCount    = 3
         val inputCount  = 3 + recCount
@@ -99,17 +94,15 @@ object App {
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
             val (pos, set) = calc(func).unzip
-            val data = Seq(new ArrayDataSource("Position", pos),
-                           new ArrayDataSource("Setpoint", set) )
-            graph(data)
+            chart(("Position", pos), ("Setpoint", set))
         }
-    }*/
+    }
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
-                            rows = 500, mutateChance = 0.06) //with NoCrossover
+                            rows = 500, mutateChance = 0.06) with NoCrossover
 
-    val solver  = new GA(popSize=201, genMax=2000, tournamentSize=4, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=20, tournamentSize=4, eleitism=true)
     //val solver  = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
@@ -124,18 +117,8 @@ object App {
         new Thread {
             override def run() = {
                 val (ans,seconds) = time{ solver(problem)(Diag) }
-                val func = ans //ans.inspect.asInstanceOf[ExpNode]
-/*                println(ans)
-                println("Fitness: "+ans.fitness)
-                println("Time:    "+seconds)
+                val soln = ans //ans.inspect.asInstanceOf[ExpNode]
 
-                //testDS.show(func.eval(_))
-                val correctData = testDS.data.map(x => x._2)
-                val foundData = for((data,target) <- testDS.data) yield func.eval(data)(0)
-                val res = Seq(new ArrayDataSource("Correct", correctData.sorted),
-                              new ArrayDataSource("Found"  , foundData.sorted))
-                (new GraphWindow(res)).startup(Array())
-*/
                 val results =
                     s"""|Solved : $testDS
                         |Using  : $problem
@@ -147,18 +130,16 @@ object App {
                         |""".stripMargin
                 println(results)
 
-                val handle = "./results/"+Calendar.getInstance().getTimeInMillis()+"/"
+                val handle = s"./results/${Calendar.getInstance().getTimeInMillis()}/"
                 (new File(handle)).mkdir()
                 val pw = new PrintWriter(new File(handle+"data.txt"))
                 pw.write(results)
                 pw.close();
 
-                val bestDS = new ArrayDataSource("Best", best)
-                val graphs: Seq[(Graph,String,ViewSpec)] =
-                    List( (graph(List(bestDS)),      "Fitness",new RTViewSpec(80.0f, -500.0f))
-                          //,(testDS.show(func.eval(_)),"Results",new RTViewSpec(20.0f, -500.0f))
-                          )
-                for((g,name,vs) <- graphs){
+                val charts: Seq[(Graph,String,ViewSpec)] =
+                    List((chart(("Best",best)),     "Fitness",new RTViewSpec(80.0f, 40.0f)),
+                         (show(testDS,soln.eval(_)),"Results",new RTViewSpec(20.0f, 10.0f)) )
+                for((g,name,vs) <- charts){
                     g.setViewSpec(vs)
                     val img = g.render(1080,1920);
                     val out = new File(handle+name+".png");
@@ -167,31 +148,10 @@ object App {
             }
         }.start
 
-        //live data
-        val data = Seq(new ArrayDataSource("Best", best))
-                       //new ArrayDataSource("Median", average),
-                       //new ArrayDataSource("Size", size))
-        (new GraphWindow(data)).startup(Array())
+        (new GraphWindow( Seq(("Best", best)) )).startup(Array())
     }
 
-    def main(args: Array[String]) {
-        optimize()
-    }
+    def main(args: Array[String]) = optimize()
 }
 
-class GraphWindow(val dataSets: Seq[DataSource]) extends SimpleSwingApplication{
-    def top = new MainFrame{
-        title = "Optimizer"
-        contents = Component.wrap(App.graph(dataSets))
-    }
-}
 
-class ArrayDataSource(val getName: String, data: Seq[Double]) extends DataSource {
-    def get(X: Double): Double = {
-        if(data.isEmpty) return 0.0
-        else {
-            val index :Int = (X*data.size.toDouble).toInt
-            data(index).toDouble
-        }
-    }
-}
