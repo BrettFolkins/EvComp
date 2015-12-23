@@ -1,6 +1,8 @@
-package com
+package com.RealSeqFunction
 
 import com.Entropy.rand
+import com.Problem
+import com.Solution
 
 trait RSFitness {
     def apply(dna: Seq[Float]) : Double

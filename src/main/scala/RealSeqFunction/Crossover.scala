@@ -1,4 +1,4 @@
-package com
+package com.RealSeqFunction
 
 import com.Entropy.rand
 
