@@ -1,4 +1,4 @@
-package com
+package com.ml
 
 abstract class FitnessEval{
     //returns scale of output values

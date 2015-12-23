@@ -1,6 +1,7 @@
-package com
+package com.ml.algorithm
 
 import com.util.Entropy.rand
+import com.ml._
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable.ArrayBuffer

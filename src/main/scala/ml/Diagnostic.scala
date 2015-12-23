@@ -1,4 +1,4 @@
-package com
+package com.ml
 
 import scala.collection.mutable.Buffer
 
@@ -23,12 +23,4 @@ object Diagnostic{
             store += pop.map(x => x.fitness).min
         }
     }
-}
-
-trait Optimizer {
-    /**
-     * Given a Problem, an optimizer well return the best solution it finds
-     * and give a Diagnostic the chance to inspect the population
-     */
-    def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType)
 }

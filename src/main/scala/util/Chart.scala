@@ -1,7 +1,7 @@
 package com.util
 
-import com.FitnessEval
-import com.DataSet
+import com.ml.DataSet
+import com.ml.FitnessEval
 import com.graph._
 import swing._
 

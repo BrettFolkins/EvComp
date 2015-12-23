@@ -1,6 +1,6 @@
 package com.util
 
-object Benchmark{
+package object Benchmark{
     def time[T](func: => T): (T, Double) = {
         val start   = System.nanoTime()
         val rtn     = func

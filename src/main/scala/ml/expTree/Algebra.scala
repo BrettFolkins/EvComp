@@ -1,4 +1,4 @@
-package com.expTree
+package com.ml.expTree
 
 import com.util.Entropy.rand
 

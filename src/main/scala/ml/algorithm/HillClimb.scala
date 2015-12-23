@@ -1,4 +1,6 @@
-package com
+package com.ml.algorithm
+
+import com.ml._
 
 class HillClimb(trials: Int) extends Optimizer {
     def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
@@ -10,6 +12,5 @@ class HillClimb(trials: Int) extends Optimizer {
         }
         sol
     }
-
-    override def toString = "Hill Climb"
+    override def toString = s"Hill Climb for $trials iterations"
 }

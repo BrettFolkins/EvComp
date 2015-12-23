@@ -1,4 +1,6 @@
-package com
+package com.ml.algorithm
+
+import com.ml._
 
 import scala.util.Random
 

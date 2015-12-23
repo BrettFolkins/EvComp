@@ -1,12 +1,14 @@
 package com
 
-import com.CGP._
-import com.expTree._
-import com.graph._
+import com.ml._
+import com.ml.algorithm._
+import com.ml.CGP._
+import com.ml.expTree._
+import com.util.Entropy.rand
 import com.util.Chart
 import com.util.Chart._
-import com.util.Benchmark._
-import com.util.Entropy.rand
+import com.util.Benchmark.time
+import com.graph._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
@@ -33,38 +35,12 @@ virtual velometer
 apply CGP techniques to RegressionTrees?
 */
 
-/*
-expririment.scala
-launch.scala
-
-FitnessEval.scala
-Optimizer.scala
-Solution.scala
-
-Annealing.scala
-GA.scala
-HillClimb.scala
-
-benchmark.scala
-Entropy.scala
-GraphUtils.scala
-DataSet.scala
-
-Quad.scala
-
-CGP/
-
-RealSeqFunction/
-
-expTree/
-*/
-
 object App {
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x.map(y => y*y).sum }
     //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
-    //val testDS = DataSet.fromFile("GPProjectData.csv")
-    //val testDS = DataSet.fromFile("propData")
+    //val testDS = DataSet.fromFile("resources/GPProjectData.csv")
+    //val testDS = DataSet.fromFile("resources/propData")
 
     val testDS = new FitnessEvalwShow{
         val range = 100.0

@@ -1,10 +1,14 @@
 package com
 
-import com.CGP._
-import com.expTree._
-import com.graph._
-import com.util.Benchmark._
+import com.ml._
+import com.ml.algorithm._
+import com.ml.CGP._
+import com.ml.expTree._
 import com.util.Entropy.rand
+import com.util.Chart
+import com.util.Chart._
+import com.util.Benchmark.time
+import com.graph._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
@@ -16,7 +20,7 @@ import java.awt.image.BufferedImage
 
 object Experiment {
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
-    val testDS = DataSet.fromFile("GPProjectData.csv")
+    val testDS = DataSet.fromFile("resources/GPProjectData.csv")
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val nodeSet = Node.algebraOps:+new Constant(()=>randomInRange)
 

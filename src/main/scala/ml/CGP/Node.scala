@@ -1,4 +1,4 @@
-package com.CGP
+package com.ml.CGP
 
 class Input
 case class In(val index: Int) extends Input

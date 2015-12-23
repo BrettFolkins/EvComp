@@ -1,10 +1,7 @@
-package com.CGP
+package com.ml.CGP
 
-//import java.util.concurrent.ThreadLocalRandom
 import com.util.Entropy.rand
-import com.FitnessEval
-import com.Problem
-import com.Solution
+import com.ml._
 
 class CGP(
   fit: FitnessEval,
