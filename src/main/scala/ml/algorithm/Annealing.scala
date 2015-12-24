@@ -3,6 +3,7 @@ package com.ml.algorithm
 import com.ml._
 
 import scala.util.Random
+import scala.util.control.Breaks._
 
 class Annealing(
     trials: Int,
@@ -17,12 +18,15 @@ class Annealing(
             return rand.nextFloat() < prob; // 0 <= nextFloat <= 1
         }
         var sol = p.potential()
-        for(i <- 0 until trials) {
-            val next = sol.mutate()
-            val diff = next.fitness - sol.fitness
-            if(diff < 0 || bypass(diff, i))
-                sol = next
-            ds log Seq(sol)
+        breakable {
+            for(i <- 0 until trials) {
+                val next = sol.mutate()
+                val diff = next.fitness - sol.fitness
+                if(diff < 0 || bypass(diff, i))
+                    sol = next
+                ds log Seq(sol)
+                if(ds.finished) break
+            }
         }
         sol
     }
