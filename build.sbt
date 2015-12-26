@@ -6,5 +6,7 @@ lazy val root = (project in file(".")).
     scalacOptions += "-feature",
     scalacOptions += "-language:implicitConversions",
     scalacOptions += "-language:postfixOps",
-    mainClass in (Compile, run) := Some("com.App")
+    mainClass in (Compile, run) := Some("com.App"),
+    mainClass in assembly := Some("com.Experiment"),
+    assemblyJarName in assembly := "Experiment.jar"
   )
