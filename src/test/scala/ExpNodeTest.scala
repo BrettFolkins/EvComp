@@ -1,7 +1,7 @@
 import org.scalacheck._
 
-import com.expTree._
-import com.expTree.BasicAlgebra._
+import com.ml.expTree._
+import com.ml.expTree.BasicAlgebra._
 import scala.util.Random
 
 object ExpNodeTests extends Properties("expTree.ExpNode") {

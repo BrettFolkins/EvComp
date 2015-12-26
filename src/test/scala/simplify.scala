@@ -1,7 +1,7 @@
 import org.scalacheck._
 
-import com.expTree._
-import com.expTree.BasicAlgebra._
+import com.ml.expTree._
+import com.ml.expTree.BasicAlgebra._
 
 object SimplifyTests extends Properties("ExpTree.Simplify") {
     import Prop.{forAll, BooleanOperators}
