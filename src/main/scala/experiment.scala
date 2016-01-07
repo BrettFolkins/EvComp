@@ -81,21 +81,24 @@ object Experiment {
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 512, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=5, genMax=1000, tournamentSize=6, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=10000, tournamentSize=6, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
+        val minImprovementTime = 750
         var count = 0
+        var lastChange = 0
         def log(pop: Seq[problem.SolutionType]) {
             val fits = pop.map(x => x.fitness)
-            best    += fits.min
+            val newBest = fits.min
             count   += 1
+            if(!best.isEmpty && newBest < best.last) lastChange = count
+            best    += newBest
         }
-        override def finished: Boolean = false //(count>200)
-        override def toString: String =
-            if(finished) s"Finished early after $count generations"
-            else s"Ran to completion"
+        override def finished: Boolean = (count - lastChange > minImprovementTime)
+        override def toString: String = s"Finished after $count generations"
     }
+
 
     def optimize(): Unit = {
         val (ans,seconds) = time{ solver(problem)(dgns) }
