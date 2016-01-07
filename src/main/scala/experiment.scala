@@ -98,11 +98,6 @@ object Experiment {
     }
 
     def optimize(): Unit = {
-        new Thread {
-            override def run() =
-                (new ChartWindow( Seq(("Best", best)) )).startup(Array())
-        }.start
-
         val (ans,seconds) = time{ solver(problem)(dgns) }
         val soln = ans //ans.inspect.asInstanceOf[ExpNode]
 
