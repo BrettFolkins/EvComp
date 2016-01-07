@@ -7,8 +7,9 @@ import scala.collection.mutable.ListBuffer
 class Quad(
     val dt: Double = 1.0/200.0,  //seconds
     val thrustTW: Double = 80.0, //Thrust To Weight
-    val accelSDV: Double = 0.1,  //feet per second^2
-    val baroSDV: Double = 1      //feet
+    val accelSDV: Double = 0.271, //feet per second^2
+    val baroSDV: Double  = 0.9    //feet
+    //SDV's Measured from running quad
   ) {
     var position: Double = 0.0
     var velocity: Double = 0.0
