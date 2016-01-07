@@ -113,9 +113,9 @@ object App {
         def log(pop: Seq[problem.SolutionType]) {
             val fits = pop.map(x => x.fitness)
             best    += fits.min
-            count += 1
+            count   += 1
         }
-        override def finished: Boolean = (count>200)
+        override def finished: Boolean = false //(count>200)
         override def toString: String =
             if(finished) s"Finished early after $count generations"
             else s"Ran to completion"
