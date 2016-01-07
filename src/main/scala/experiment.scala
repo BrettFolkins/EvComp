@@ -81,7 +81,7 @@ object Experiment {
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 512, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=5, genMax=1000, tournamentSize=20, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=1000, tournamentSize=6, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
