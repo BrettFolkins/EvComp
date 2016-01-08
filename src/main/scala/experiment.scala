@@ -73,7 +73,9 @@ object Experiment {
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
             val (pos, set) = calc(func).unzip
-            Chart(("Position", pos), ("Setpoint", set))
+            val positionList = (1 to 5).map(x=> calc(func).unzip._1)
+            val chartList = (pos +: positionList).map( ("Position",_) )
+            Chart( (("Setpoint", set) +: chartList).map(DataSourcePromoter(_)):_* )
         }
     }
 
@@ -81,7 +83,7 @@ object Experiment {
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 512, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=5, genMax=10000, tournamentSize=6, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=10000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
