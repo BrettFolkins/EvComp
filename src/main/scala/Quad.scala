@@ -8,16 +8,19 @@ class Quad(
     val dt: Double = 1.0/200.0,  //seconds
     val thrustTW: Double = 80.0, //Thrust To Weight
     val accelSDV: Double = 0.271, //feet per second^2
-    val baroSDV: Double  = 0.9    //feet
+    val baroSDV: Double  = 0.9,   //feet
+    val motorDelay:Double= 1.0    //how quickly the motors spool up
     //SDV's Measured from running quad
   ) {
     var position: Double = 0.0
     var velocity: Double = 0.0
     var acceleration: Double = 0.0
     var time: Double = 0.0
+    var thrust: Double = 0.0
 
     def update(throttle: Double): Unit = {
-        val th = Math.max(0.0, Math.min(1.0, throttle))
+        thrust = (motorDelay)*throttle + (1.0-motorDelay)*thrust
+        val th = Math.max(0.0, Math.min(1.0, thrust))
         acceleration = th*thrustTW - 32.17  //feet per second^2
         velocity     = velocity + acceleration*dt //feet per second
         position     = Math.max(0, position + velocity*dt) //feet
