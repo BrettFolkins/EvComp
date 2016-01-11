@@ -2,6 +2,9 @@ package com.ml.CGP
 
 import com.util.Entropy.rand
 import com.ml._
+import com.expressions.Algebra
+
+import com.util.Benchmark.time
 
 class CGP(
   fit: FitnessEval,
@@ -34,6 +37,9 @@ class CGP(
 
         lazy val fitness: Double = fit(eval(_))
 
+
+
+/*
         def eval(input: Seq[Double]): Seq[Double] = {
             def get(n: Input): Double = n match {
                 case In(i) => input(i)
@@ -42,7 +48,19 @@ class CGP(
             def evalNode(i: Int): Double = nodes(i).calc(get)
 
             (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
-        }
+        }*/
+
+
+        lazy val compiled = compile(this)
+
+        def eval(input: Seq[Double]): Seq[Double] = compiled(input)
+
+
+
+
+
+
+
 
         def mark(): Seq[Boolean] = {
             val cache = Array.fill[Boolean](nodes.size)(false)
@@ -132,6 +150,37 @@ class CGP(
             if(c()) randomNode(i)
             else n
         })
+    }
+
+    def compile(g: Grid): (Seq[Double]) => Seq[Double] = {
+        val A = new Algebra
+        import A._
+
+        def toExpr(n: Node): Expression = {
+            val children = n.children.map(_ match {
+                case Nd(i) => toExpr(g.nodes(i))
+                case In(i) => A(Symbol(i.toString))
+            })
+            n match {
+                case m: Constant  => A(m.value)
+                case m: BinNode   => A(Symbol(m.sym), children)
+                case _ => {
+                    //fill this in later
+                    throw new Exception("arbitrary code compilation not implemented")
+                }
+            }
+        }
+        val exprs = g.nodes.takeRight(fit.outputCount).map(toExpr(_))
+        val cexpr = exprs.map(A.compile(_))
+
+        (variables: Seq[Double]) => {
+            val (map, t) = time{
+                Map( variables.zipWithIndex.map{ case(d,i) => (Symbol(i.toString), d) }:_* )
+            }
+            /*val map = Map( variables.zipWithIndex.map{
+                                case(d,i) => (Symbol(i.toString), d) }:_* )*/
+            cexpr.map(f => f(map))
+        }
     }
 }
 

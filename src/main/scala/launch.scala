@@ -42,9 +42,9 @@ object App {
     //val testDS = DataSet.fromFile("resources/GPProjectData.csv")
     //val testDS = DataSet.fromFile("resources/propData")
 
-/*    val testDS = new FitnessEvalwShow{
+    val testDS = new FitnessEvalwShow{
         val range = 100.0
-        val recCount    = 3
+        val recCount    = 2
         val inputCount  = 3 + recCount
         val outputCount = 1 + recCount
         val runningTime = 10.0
@@ -70,8 +70,8 @@ object App {
             }
 
             def control(q: Quad, s: Double): Double = {
-                //val rtn = func( List(s, q.position, q.velocity, q.acceleration)++momento )
                 val rtn = func( List(s, q.barometer, q.accelerometer)++momento )
+                //val rtn = func( List(s, q.position, q.velocity, q.acceleration)++momento )
                 momento = rtn.takeRight(recCount).map(clean(_))
                 clean(rtn(0))
             }
@@ -91,14 +91,19 @@ object App {
                 val results = calc(func)
                 Math.sqrt(results.map{ case (pos, set) => (pos-set)*(pos-set) }.sum)
             }
-
-            (1 to numAverage).map(x => score()).sum / numAverage.toDouble
+            val (ans, t) = time{
+                (1 to numAverage).map(x => score()).sum / numAverage.toDouble
+            }
+            println("ran in "+t)
+            ans
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
             val (pos, set) = calc(func).unzip
-            Chart(("Position", pos), ("Setpoint", set))
+            val positionList = (1 to 5).map(x=> calc(func).unzip._1)
+            val chartList = (pos +: positionList).map( ("Position",_) )
+            Chart( (("Setpoint", set) +: chartList).map(DataSourcePromoter(_)):_* )
         }
-    }*/
+    }
 
     val testDS = new FitnessEvalwShow{
         val range = 100.0

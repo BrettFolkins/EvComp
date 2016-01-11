@@ -21,7 +21,7 @@ class Constant(val gen: ()=>Double) extends Node {
     override def toString(): String = "%1.2f" format value
 }
 
-class UnaryNode(val op: (Double) => Double, sym: String, i: Input) extends Node{
+class UnaryNode(val op: (Double) => Double, val sym: String, i: Input) extends Node{
     def children = List(i)
     def calc(get: Input => Double): Double = op(get(i))
     def cons(child: () => Input): Node = new UnaryNode(op, sym, child())
@@ -29,7 +29,7 @@ class UnaryNode(val op: (Double) => Double, sym: String, i: Input) extends Node{
     override def toString(): String = sym+"("+i+")"
 }
 
-class BinNode(val op: (Double, Double) => Double, sym: String,
+class BinNode(val op: (Double, Double) => Double, val sym: String,
                 l: Input, r: Input) extends Node {
     def children = List(l,r)
     def calc(get: Input => Double): Double = op(get(l),get(r))
@@ -42,7 +42,7 @@ class NaryNode(
   val children: Seq[Input],
   numInput: Int,
   op: (Seq[Double]) => Double,
-  name: String
+  val name: String
 ) extends Node {
     def calc(get: Input  => Double): Double =
         op(children.map(get))
