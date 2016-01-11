@@ -36,19 +36,19 @@ apply CGP techniques to RegressionTrees?
 */
 
 object App {
-    val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
+    //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
     //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x.map(y => y*y).sum }
     //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
     //val testDS = DataSet.fromFile("resources/GPProjectData.csv")
     //val testDS = DataSet.fromFile("resources/propData")
 
-/*    val testDS = new FitnessEvalwShow{
+    val testDS = new FitnessEvalwShow{
         val range = 100.0
-        val recCount    = 3
+        val recCount    = 2
         val inputCount  = 3 + recCount
         val outputCount = 1 + recCount
         val runningTime = 10.0
-        val numAverage  = 50
+        val numAverage  = 1
 
         override def toString =
             s"Quad Sim for $runningTime seconds with $recCount recurrent terms, averaging $numAverage trials"
@@ -70,8 +70,8 @@ object App {
             }
 
             def control(q: Quad, s: Double): Double = {
-                //val rtn = func( List(s, q.position, q.velocity, q.acceleration)++momento )
                 val rtn = func( List(s, q.barometer, q.accelerometer)++momento )
+                //val rtn = func( List(s, q.position, q.velocity, q.acceleration)++momento )
                 momento = rtn.takeRight(recCount).map(clean(_))
                 clean(rtn(0))
             }
@@ -96,16 +96,17 @@ object App {
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
             val (pos, set) = calc(func).unzip
-            Chart(("Position", pos), ("Setpoint", set))
+            val positionList = (1 to 5).map(x=> calc(func).unzip._1)
+            val chartList = (pos +: positionList).map( ("Position",_) )
+            Chart( (("Setpoint", set) +: chartList).map(DataSourcePromoter(_)):_* )
         }
-    }*/
+    }
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 500, mutateChance = 0.09) with NoCrossover
 
-    val solver  = new GA(popSize=5, genMax=200000, tournamentSize=4, eleitism=true)
-    //val solver  = new GA(popSize=5, genMax=50*2000, tournamentSize=5, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=20000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
