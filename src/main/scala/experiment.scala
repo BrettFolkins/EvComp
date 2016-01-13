@@ -24,7 +24,7 @@ object Experiment {
         val recCount    = 3
         val inputCount  = 3 + recCount
         val outputCount = 1 + recCount
-        val runningTime = 10.0
+        val runningTime = 20.0
         val numAverage  = 50
 
         override def toString =
@@ -39,10 +39,10 @@ object Experiment {
             def heightFunc(t: Double): Double = {
                 if(t < 3.0){
                     t*(10.0/3.0)
-                } else if (t < 7.0) {
+                } else if (t < 17.0) {
                     10.0
                 } else {
-                    (10.0-t)*(10.0/3.0)
+                    (20.0-t)*(10.0/3.0)
                 }
             }
 
@@ -83,11 +83,11 @@ object Experiment {
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 512, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=5, genMax=10000, tournamentSize=5, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=15000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
-        val minImprovementTime = 750
+        val minImprovementTime = 1500
         var count = 0
         var lastChange = 0
         def log(pop: Seq[problem.SolutionType]) {
