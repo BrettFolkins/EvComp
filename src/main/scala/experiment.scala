@@ -140,11 +140,11 @@ object Experiment {
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 128, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=50, genMax=15000, tournamentSize=5, eleitism=true)
+    val solver  = new GA(popSize=50, genMax=50000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
-        val minImprovementTime = 1500
+        val minImprovementTime = 5000
         var count = 0
         var lastChange = 0
         def log(pop: Seq[problem.SolutionType]) {
