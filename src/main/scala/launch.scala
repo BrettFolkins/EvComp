@@ -104,12 +104,12 @@ object App {
         val range = 100.0
         val recCount    = 3
         val inputCount  = 2 + recCount //baro, accel, rec...
-        val outputCount = 1 + recCount
+        val outputCount = 3 + recCount
         val runningTime = 100.0
         val accelSDV: Double = 0.271 //feet per second^2
         val baroSDV: Double  = 0.900 //feet
 
-        val (trueVelocity, flightData) = {
+        /*val (trueVelocity, flightData) = {
             import Math._
             val pA = 0.5*PI
             val pB = 0.1*PI
@@ -121,6 +121,24 @@ object App {
             (0.0 to runningTime by 0.05).map(t =>
                     (vel(t), List(barometer(t), accelerometer(t)))
                 ).unzip
+        }*/
+
+
+        val flightData = {
+            import Math._
+            val pA = 0.5*PI
+            val pB = 0.1*PI
+            def pos(t: Double) = t*0.005 +0.3*sin(t*pA)       +sin(t*pB)
+            def vel(t: Double) = 1*0.005 +0.3*pA*cos(t*pA)    +pB*cos(t*pB)
+            def acc(t: Double) = 0*0.005 -0.3*pA*pA*sin(t*pA) -pB*pB*sin(t*pB)
+            (0.0 to runningTime by 0.05).map(t => List(pos(t), vel(t), acc(t)))
+        }
+
+        val sensorData = {
+            def gaussSDV(sdv: Double) = rand.nextGaussian()*sdv
+            def mapSensors(s: List[Double]) = List(s(0)+gaussSDV(baroSDV),
+                                                   s(2)+gaussSDV(accelSDV))
+            flightData.map(mapSensors(_))
         }
 
         override def toString =
@@ -129,31 +147,38 @@ object App {
         def clean(d: Double): Double =
             if( (d isInfinity) || (d isNaN) ) 0.0 else d
 
-        def calc(func: Seq[Double] => Seq[Double]) : Seq[(Double,Double)] = {
+        def calc(func: Seq[Double] => Seq[Double]) : Seq[(Seq[Double],Seq[Double])] = {
 
-            val results = flightData.scanLeft(Seq.fill[Double](recCount)(0.0)){
-                case(pres,data) => {
-                    val momento = pres.takeRight(recCount)
-                    func( (data ++ momento) ).map(clean(_))
+            val results = sensorData.scanLeft(Seq.fill[Double](recCount)(0.0)){
+                case(prev,sensors) => {
+                    val momento = prev.takeRight(recCount)
+                    func( (sensors ++ momento) ).map(clean(_))
                 }
             }
 
             val velocities = results.map(_.head)
+            val filtered = results.map(_.take(3))
 
-            velocities.zip(trueVelocity).toList
+            filtered.zip(flightData).toList
         }
         def apply(func: Seq[Double] => Seq[Double]) : Double = {
             def score(): Double = {
                 val results = calc(func)
-                Math.sqrt(results.map{ case (pos, set) => (pos-set)*(pos-set) }.sum)
+                val tdiffs = results.map{ case(filtered, correct) =>
+                    filtered.zip(correct).map{case(a,b) => (a-b)*(a-b)}.sum
+                }
+                Math.sqrt(tdiffs.sum)
             }
             score()
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
-            val (res, vel) = calc(func).unzip
-            val (bar, acc) = flightData.map(s => (s(0), s(1))).unzip
-            Chart(("True Velocity", vel), ("Result", res) )
-                    //,("Barometer", bar), ("Accelerometer",acc))
+            val results = calc(func)
+            val (falt, talt) = results.map{case(f,t) => (f(0),t(0))}.unzip
+            val (fvel, tvel) = results.map{case(f,t) => (f(1),t(1))}.unzip
+            val (facc, tacc) = results.map{case(f,t) => (f(2),t(2))}.unzip
+            Chart(("True Velocity", tvel), ("Filtered Velocity", fvel),
+                  ("True Altitude", talt), ("Filtered Altitude", falt),
+                  ("True Acceleration", tacc), ("Filtered Acceleration", facc) )
         }
     }
 
@@ -161,7 +186,7 @@ object App {
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 64, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=100, genMax=1000, tournamentSize=5, eleitism=true)
+    val solver  = new GA(popSize=5, genMax=100, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
