@@ -121,7 +121,7 @@ object Experiment {
         }
 
         override def toString =
-            s"Velocity filter for $runningTime seconds with $recCount recurrent terms"
+            s"Quadcopter state filter for $runningTime seconds with $recCount recurrent terms"
 
         def clean(d: Double): Double =
             if( (d isInfinity) || (d isNaN) ) 0.0 else d
