@@ -144,7 +144,8 @@ object Experiment {
             def score(): Double = {
                 val results = calc(func)
                 val tdiffs = results.map{ case(filtered, correct) =>
-                    filtered.zip(correct).map{case(a,b) => (a-b)*(a-b)}.sum
+                    val diffs = filtered.zip(correct).map{case(a,b) => (a-b)*(a-b)}
+                    diffs(0)/*alt*/+8.0*diffs(1)/*vel*/+diffs(2)/*acc*/
                 }
                 Math.sqrt(tdiffs.sum)
             }
