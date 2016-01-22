@@ -103,90 +103,83 @@ object App {
     val testDS = new FitnessEvalwShow{
         val range = 100.0
         val recCount    = 3
-        val inputCount  = 2 + recCount //baro, accel, rec...
-        val outputCount = 3 + recCount
+        val outputCount = 1 + recCount
+        val inputCount  = 2 + outputCount //baro, accel, rec...
         val runningTime = 100.0
         val accelSDV: Double = 0.271 //feet per second^2
+        val accelBais:Double = 0.003
         val baroSDV: Double  = 0.900 //feet
-
-        /*val (trueVelocity, flightData) = {
-            import Math._
-            val pA = 0.5*PI
-            val pB = 0.1*PI
-            def pos(t: Double) = t*0.005 +0.3*sin(t*pA)       +sin(t*pB)
-            def vel(t: Double) = 1*0.005 +0.3*pA*cos(t*pA)    +pB*cos(t*pB)
-            def acc(t: Double) = 0*0.005 -0.3*pA*pA*sin(t*pA) -pB*pB*sin(t*pB)
-            def accelerometer(t: Double) = acc(t)+rand.nextGaussian()*accelSDV
-            def barometer(t: Double) = pos(t)+rand.nextGaussian()*baroSDV
-            (0.0 to runningTime by 0.05).map(t =>
-                    (vel(t), List(barometer(t), accelerometer(t)))
-                ).unzip
-        }*/
-
 
         val flightData = {
             import Math._
             val pA = 0.5*PI
             val pB = 0.1*PI
-            def pos(t: Double) = t*0.005 +0.3*sin(t*pA)       +sin(t*pB)
-            def vel(t: Double) = 1*0.005 +0.3*pA*cos(t*pA)    +pB*cos(t*pB)
-            def acc(t: Double) = 0*0.005 -0.3*pA*pA*sin(t*pA) -pB*pB*sin(t*pB)
+            def pos(t: Double) = 2500.0 + t*0.005 +0.3*sin(t*pA)       +sin(t*pB) //feet
+            def vel(t: Double) =          1*0.005 +0.3*pA*cos(t*pA)    +pB*cos(t*pB) //feet per second
+            def acc(t: Double) =          0*0.005 -0.3*pA*pA*sin(t*pA) -pB*pB*sin(t*pB) //ft/s^2
             (0.0 to runningTime by 0.05).map(t => List(pos(t), vel(t), acc(t)))
         }
 
+        val trueVelocity = flightData.map(_(1))
+        val trueAltitude = flightData.map(_(0))
+
         val sensorData = {
             def gaussSDV(sdv: Double) = rand.nextGaussian()*sdv
-            def mapSensors(s: List[Double]) = List(s(0)+gaussSDV(baroSDV),
-                                                   s(2)+gaussSDV(accelSDV))
+            def baroNoise(b: Double) = b+gaussSDV(baroSDV)
+            def acclNoise(a: Double) = a+gaussSDV(accelSDV)+accelBais
+            def mapSensors(s: List[Double]) = List(baroNoise(s(0)), acclNoise(s(2)))
             flightData.map(mapSensors(_))
         }
 
         override def toString =
-            s"Velocity filter for $runningTime seconds with $recCount recurrent terms"
+            s"altitude filter for $runningTime seconds with $recCount recurrent terms"
 
         def clean(d: Double): Double =
             if( (d isInfinity) || (d isNaN) ) 0.0 else d
 
-        def calc(func: Seq[Double] => Seq[Double]) : Seq[(Seq[Double],Seq[Double])] = {
+        def calc(func: Seq[Double] => Seq[Double]) : Seq[(Double,Double)] = {
 
-            val results = sensorData.scanLeft(Seq.fill[Double](recCount)(0.0)){
-                case(prev,sensors) => {
-                    val momento = prev.takeRight(recCount)
-                    func( (sensors ++ momento) ).map(clean(_))
-                }
+            val results = sensorData.scanLeft(Seq.fill[Double](outputCount)(0.0)){
+                case(prev,sensors) => func( (sensors ++ prev) ).map(clean(_))
             }
 
-            val velocities = results.map(_.head)
-            val filtered = results.map(_.take(3))
+            val altitudes = results.map(_.head)
 
-            filtered.zip(flightData).toList
+            //velocities.zip(trueVelocity)
+            altitudes.zip(trueAltitude)
         }
         def apply(func: Seq[Double] => Seq[Double]) : Double = {
             def score(): Double = {
                 val results = calc(func)
-                val tdiffs = results.map{ case(filtered, correct) =>
-                    filtered.zip(correct).map{case(a,b) => (a-b)*(a-b)}.sum
-                }
+/*                val tdiffs = results.map{ case(filtered, correct) =>
+                    val diffs = filtered.zip(correct).map{case(a,b) => (a-b)*(a-b)}
+                    diffs(0)/*alt*/+8.0*diffs(1)/*vel*/+diffs(2)/*acc*/
+                }*/
+                val tdiffs = results.map{case(f,t) => (f-t)*(f-t)}
                 Math.sqrt(tdiffs.sum)
             }
             score()
         }
         def show(func: Seq[Double] => Seq[Double]): Graph = {
             val results = calc(func)
-            val (falt, talt) = results.map{case(f,t) => (f(0),t(0))}.unzip
-            val (fvel, tvel) = results.map{case(f,t) => (f(1),t(1))}.unzip
-            val (facc, tacc) = results.map{case(f,t) => (f(2),t(2))}.unzip
-            Chart(("True Velocity", tvel), ("Filtered Velocity", fvel),
-                  ("True Altitude", talt), ("Filtered Altitude", falt),
-                  ("True Acceleration", tacc), ("Filtered Acceleration", facc) )
+            val (falt, talt) = results.unzip
+
+            //val (falt, talt) = results.map{case(f,t) => (f(0),t(0))}.unzip
+            //val (fvel, tvel) = results.map{case(f,t) => (f(1),t(1))}.unzip
+            //val (facc, tacc) = results.map{case(f,t) => (f(2),t(2))}.unzip
+            Chart( ("True Altitude", talt), ("Filtered Altitude", falt) )
+                  //("True Velocity", tvel), ("Filtered Velocity", fvel) )
+                  //("True Altitude", talt), ("Filtered Altitude", falt),
+                  //("True Acceleration", tacc), ("Filtered Acceleration", facc) )
         }
     }
+
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 64, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=5, genMax=100, tournamentSize=5, eleitism=true)
+    val solver  = new GA(popSize=50, genMax=1000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
@@ -232,7 +225,7 @@ object App {
 
         val charts: Seq[(Graph,String,ViewSpec)] =
             List((Chart(("Best",best)),     "Fitness",new RTViewSpec(20.0f, 10.0f)),
-                 (show(testDS,soln.eval(_)),"Results",new RTViewSpec(10.0f, 0.0f)) )
+                 (show(testDS,soln.eval(_)),"Results",new RTViewSpec(10.0f, 2500.0f)) )
         for((g,name,vs) <- charts){
             g.setViewSpec(vs)
             val img = g.render(1080,1920);

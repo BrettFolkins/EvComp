@@ -82,8 +82,8 @@ object Experiment {
     val testDS = new FitnessEvalwShow{
         val range = 100.0
         val recCount    = 3
-        val inputCount  = 2 + recCount //baro, accel, rec...
         val outputCount = 3 + recCount
+        val inputCount  = 2 + outputCount + recCount //baro, accel, rec...
         val runningTime = 100.0
         val accelSDV: Double = 0.271 //feet per second^2
         val baroSDV: Double  = 0.900 //feet
@@ -107,9 +107,9 @@ object Experiment {
             import Math._
             val pA = 0.5*PI
             val pB = 0.1*PI
-            def pos(t: Double) = t*0.005 +0.3*sin(t*pA)       +sin(t*pB)
-            def vel(t: Double) = 1*0.005 +0.3*pA*cos(t*pA)    +pB*cos(t*pB)
-            def acc(t: Double) = 0*0.005 -0.3*pA*pA*sin(t*pA) -pB*pB*sin(t*pB)
+            def pos(t: Double) = 2000.0 + t*0.005 +0.3*sin(t*pA)       +sin(t*pB) //feet
+            def vel(t: Double) =          1*0.005 +0.3*pA*cos(t*pA)    +pB*cos(t*pB) //feet per second
+            def acc(t: Double) =          0*0.005 -0.3*pA*pA*sin(t*pA) -pB*pB*sin(t*pB) //ft/s^2
             (0.0 to runningTime by 0.05).map(t => List(pos(t), vel(t), acc(t)))
         }
 
@@ -129,10 +129,7 @@ object Experiment {
         def calc(func: Seq[Double] => Seq[Double]) : Seq[(Seq[Double],Seq[Double])] = {
 
             val results = sensorData.scanLeft(Seq.fill[Double](recCount)(0.0)){
-                case(prev,sensors) => {
-                    val momento = prev.takeRight(recCount)
-                    func( (sensors ++ momento) ).map(clean(_))
-                }
+                case(prev,sensors) => func( (sensors ++ prev) ).map(clean(_))
             }
 
             val velocities = results.map(_.head)
@@ -144,7 +141,8 @@ object Experiment {
             def score(): Double = {
                 val results = calc(func)
                 val tdiffs = results.map{ case(filtered, correct) =>
-                    filtered.zip(correct).map{case(a,b) => (a-b)*(a-b)}.sum
+                    val diffs = filtered.zip(correct).map{case(a,b) => (a-b)*(a-b)}
+                    diffs(0)/*alt*/+8.0*diffs(1)/*vel*/+diffs(2)/*acc*/
                 }
                 Math.sqrt(tdiffs.sum)
             }
