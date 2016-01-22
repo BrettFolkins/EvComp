@@ -165,11 +165,11 @@ object Experiment {
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
                             rows = 192, mutateChance = 0.10) with NoCrossover
 
-    val solver  = new GA(popSize=50, genMax=50000, tournamentSize=5, eleitism=true)
+    val solver  = new GA(popSize=50, genMax=100000, tournamentSize=5, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
-        val minImprovementTime = 5000
+        val minImprovementTime = 15000
         var count = 0
         var lastChange = 0
         def log(pop: Seq[problem.SolutionType]) {
@@ -207,7 +207,7 @@ object Experiment {
         pw.close();
 
         val charts: Seq[(Graph,String,ViewSpec)] =
-            List((Chart(("Best",best)),     "Fitness",new RTViewSpec(20.0f, 10.0f)),
+            List((Chart(("Best",best)),     "Fitness",new RTViewSpec(50.0f, 25.0f)),
                  (show(testDS,soln.eval(_)),"Results",new RTViewSpec(10.0f, 00.0f)) )
         for((g,name,vs) <- charts){
             g.setViewSpec(vs)
