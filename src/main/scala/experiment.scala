@@ -120,7 +120,7 @@ object Experiment {
 
             val results = sensorData.scanLeft(Seq.fill[Double](outputCount)(0.0)){
                 case(prev,sensors) => func( (sensors ++ prev) ).map(clean(_))
-            }
+            }.drop(1) //remove the 0's initialization from the outputs
 
             val altitudes = results.map(_.head)
 
