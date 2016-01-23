@@ -224,7 +224,7 @@ object App {
         pw.close();
 
         val charts: Seq[(Graph,String,ViewSpec)] =
-            List((Chart(("Best",best)),     "Fitness",new RTViewSpec(20.0f, 10.0f)),
+            List((Chart(("Best",best)),     "Fitness",new RTViewSpec(100.0f, 50.0f)),
                  (show(testDS,soln.eval(_)),"Results",new RTViewSpec(10.0f, 2500.0f)) )
         for((g,name,vs) <- charts){
             g.setViewSpec(vs)

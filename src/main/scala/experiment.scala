@@ -200,7 +200,7 @@ object Experiment {
 
         val charts: Seq[(Graph,String,ViewSpec)] =
             List((Chart(("Best",best)),     "Fitness",new RTViewSpec(50.0f, 25.0f)),
-                 (show(testDS,soln.eval(_)),"Results",new RTViewSpec(10.0f, 00.0f)) )
+                 (show(testDS,soln.eval(_)),"Results",new RTViewSpec(10.0f, 2500.0f)) )
         for((g,name,vs) <- charts){
             g.setViewSpec(vs)
             val img = g.render(1200,1920);
