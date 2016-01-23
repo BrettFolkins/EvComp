@@ -42,13 +42,13 @@ object App {
     //val testDS = DataSet.fromFile("resources/GPProjectData.csv")
     //val testDS = DataSet.fromFile("resources/propData")
 
-    val testDS = new FitnessEvalwShow{
+/*    val testDS = new FitnessEvalwShow{
         val range = 100.0
         val recCount    = 2
         val inputCount  = 3 + recCount
         val outputCount = 1 + recCount
         val runningTime = 10.0
-        val numAverage  = 50
+        val numAverage  = 1
 
         override def toString =
             s"Quad Sim for $runningTime seconds with $recCount recurrent terms, averaging $numAverage trials"
@@ -103,7 +103,7 @@ object App {
             val chartList = (pos +: positionList).map( ("Position",_) )
             Chart( (("Setpoint", set) +: chartList).map(DataSourcePromoter(_)):_* )
         }
-    }
+    }*/
 
     val testDS = new FitnessEvalwShow{
         val range = 100.0
@@ -178,7 +178,6 @@ object App {
                   //("True Acceleration", tacc), ("Filtered Acceleration", facc) )
         }
     }
-
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),

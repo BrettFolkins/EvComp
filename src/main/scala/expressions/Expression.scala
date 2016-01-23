@@ -72,6 +72,7 @@ class Algebra{
                         ..${symVals(e)}
                         ${toAST(e)}
                     }"""
+
         val compiled = tb.compile(ast)()
         compiled.asInstanceOf[Map[scala.Symbol, Double] => Double]
     }
