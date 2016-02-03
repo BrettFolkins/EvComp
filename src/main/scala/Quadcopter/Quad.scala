@@ -67,6 +67,7 @@ object Quad{
 
     /** Given a (time)=>throttle function, and a maximum time to simulate for,
       * return associated flight data
+      * Note: the flight path is Non-Deterministic
       */
     def flightData(throttleAtT: (Double) => Double, maxT: Double): Seq[(Telemetry, Sensors)] = {
         val quad = new Quad()
@@ -80,6 +81,7 @@ object Quad{
 
     /** Given a function for controlling the quad based on its sensors,
       * return the resulting flight data
+      * Note: the flight path is Non-Deterministic
       */
     def flightData(throttle: (Sensors, Double) => Double, maxT: Double): Seq[Telemetry] = {
         val quad = new Quad()
@@ -201,12 +203,4 @@ object Quad{
             Chart(("Position", pos), ("Setpoint", set))
         }
     }
-
-
-
-
-
-
-
-
 }
