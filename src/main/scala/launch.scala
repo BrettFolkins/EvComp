@@ -41,20 +41,26 @@ object App {
     val testDS = new TelemetryFilter(50.0)
     //val testDS = new AltitudeHold(10.0)
 
-    def flightFunc(consts: Seq[Float])(input: Seq[Double]): Seq[Double] = {
-        consts.take(testDS.outputCount).map(_.toDouble)
+    def flightFunc(consts: Seq[Float])(sensors: Seq[Double]): Seq[Double] = {
+        consts.map(_.toDouble)
     }
 
-    object constantWrapper extends RealSeqFunction(
-      "Quadcopter challenge",
-      -100.0f, 100.0f,
-      5,
-      new RSFitness(){
-        def apply(dna: Seq[Float]) : Double = {
-            testDS(flightFunc(dna)(_))
-        }
-    })
-    val problem = constantWrapper(new GaussMutate(0.5f), new TwoPointCrossover())
+    def optimizeConsts(fitness: FitnessEval, numberOfConsts: Int)(
+        method: (Seq[Float]) => ((Seq[Double])=>Seq[Double])
+      ): Problem = {
+        val constantWrapper = new RealSeqFunction(
+          "Constant optimizer",
+          -100.0f, 100.0f,
+          numberOfConsts,
+          new RSFitness(){
+            def apply(dna: Seq[Float]) : Double = {
+                fitness(method(dna)(_))
+            }
+        })
+        constantWrapper(new GaussMutate(0.5f), new TwoPointCrossover())
+    }
+
+    val problem = optimizeConsts(testDS, 3){ flightFunc(_) }
 
 /*
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
