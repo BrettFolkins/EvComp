@@ -33,10 +33,10 @@ object Chart {
         }
     }
 
-    class ChartWindow(val dataSets: Seq[DataSource]) extends SimpleSwingApplication{
+    class ChartWindow(val g: Graph) extends SimpleSwingApplication{
         def top = new MainFrame{
             title = "Optimizer"
-            contents = Component.wrap(Chart(dataSets:_*))
+            contents = Component.wrap(g)
         }
     }
 
