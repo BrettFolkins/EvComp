@@ -1,7 +1,7 @@
 package com.ml
 
 abstract class FitnessEval{
-    //returns scale of output values
+    //returns scale of output values s.t. abs(output) <= range
     val range: Double
     //the size of input vectors associated with this function
     val inputCount: Int
