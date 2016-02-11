@@ -3,11 +3,34 @@ package com.RealSeqFunction
 import com.util.Entropy.rand
 import com.ml._
 
-trait RSFitness {
-    def apply(dna: Seq[Float]) : Double
+class RealSeq(fitFunc: FitnessEval,
+              mutator: RSMutate,
+              crosser: RSCrossover)
+        extends Problem {
+
+    type SolutionType = RSSolution
+    def potential(): RSSolution = new RSSolution(
+            Array.fill[Double](fitFunc.outputCount)(validRand())
+        )
+
+    class RSSolution(val coord: Seq[Double]) extends Solution[RSSolution] {
+        def inspect = coord
+        val fitness = fitFunc(eval(_))
+        def mutate  = new RSSolution(mutator(coord, -fitFunc.range, fitFunc.range))
+        def crossover(other: RSSolution) = {
+            val (a,b) = crosser(coord, other.coord)
+            (new RSSolution(a), new RSSolution(b))
+        }
+        def eval(input: Seq[Double]): Seq[Double] = coord
+        override def toString() = coord.mkString("[",", ","]")
+    }
+
+    def validRand() = (rand.nextDouble() * 2.0 - 1) * fitFunc.range;
+
+    override def toString() = s"Sequence of ${fitFunc.outputCount} real values"
 }
 
-class RealSeqFunction(
+/*class RealSeqFunction(
   name: String,
   val min: Float,
   val max: Float,
@@ -36,3 +59,4 @@ class RealSeqFunction(
     }
     override def toString() = name
 }
+*/
