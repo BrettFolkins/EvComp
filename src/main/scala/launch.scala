@@ -42,6 +42,7 @@ object App {
         val altitudeEst = sensors(3)
         val velocityEst = sensors(4)
         val accelerationEst = sensors(5)
+        val oldIntegral = sensors(6)
 
         val K = Seq(0.12779056,0.27917558,0.011846306,0.0015973191,0.010109428)
 
@@ -54,23 +55,25 @@ object App {
 
         val C = consts.map(_.toDouble)
         val error = (setpoint-altitude)
-        val intergral = oldIntegral + error
+        val integral = oldIntegral + error
         val throttle = C(0)*error + C(1)*velocity + C(2)*acceleration + C(3)*integral
 
         //add I term
         //bring back adaptive termination condition
         //hand CGP my evolved sensor data
 
-        Seq(throttle, altitude, velocity, acceleration)
+        Seq(throttle, altitude, velocity, acceleration, integral)
     }
 
-    val challenge = new TelemetryFilter(50.0)
-    //val challenge = new AltitudeHold(10.0)
+    //val challenge = new TelemetryFilter(50.0)
+    val challenge = new AltitudeHold(10.0){
+        override val recCount = 4
+    }
 
-    val testDS = new constOptimizer(challenge, 3, flightFunc(_))
+    val testDS = new constOptimizer(challenge, 4, flightFunc(_))
 
-    val problem = new RealSeq(testDS, new GaussMutate(0.5f), new TwoPointCrossover());
-    val solver  = new GA(popSize=40, genMax=100, tournamentSize=3, eleitism=true)
+    val problem = new RealSeq(testDS, new SelectiveMutate(0.2f, sdv=0.05f), new UniformCrossover(0.25f));
+    val solver  = new GA(popSize=40, genMax=1000, tournamentSize=3, eleitism=true)
 
     val bests = new ArrayBuffer[Double]()
 
