@@ -11,6 +11,7 @@ import com.util.Benchmark.time
 import com.graph._
 import com.Quadcopter.Quad._
 import com.RealSeqFunction._
+import com.ml.FitnessWrappers._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
@@ -38,36 +39,16 @@ apply CGP techniques to RegressionTrees?
 */
 
 object App {
-    val testDS = new TelemetryFilter(50.0)
-    //val testDS = new AltitudeHold(10.0)
-
-    def flightFunc(consts: Seq[Float])(sensors: Seq[Double]): Seq[Double] = {
-        consts.map(_.toDouble)
+    def flightFunc(consts: Seq[Double])(sensors: Seq[Double]): Seq[Double] = {
+        consts
     }
 
-    def optimizeConsts(fitness: FitnessEval, numberOfConsts: Int)(
-        method: (Seq[Float]) => ((Seq[Double])=>Seq[Double])
-      ): Problem = {
-        val constantWrapper = new RealSeqFunction(
-          "Constant optimizer",
-          -100.0f, 100.0f,
-          numberOfConsts,
-          new RSFitness(){
-            def apply(dna: Seq[Float]) : Double = {
-                fitness(method(dna)(_))
-            }
-        })
-        constantWrapper(new GaussMutate(0.5f), new TwoPointCrossover())
-    }
+    val challenge = new TelemetryFilter(50.0)
+    //val challenge = new AltitudeHold(10.0)
 
-    val problem = optimizeConsts(testDS, 3){ flightFunc(_) }
+    val testDS = new constOptimizer(challenge, 3, flightFunc(_))
 
-/*
-    def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
-    val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
-                            rows = 64, mutateChance = 0.10) with NoCrossover
-*/
-
+    val problem = new RealSeq(testDS, new GaussMutate(0.5f), new TwoPointCrossover());
     val solver  = new GA(popSize=40, genMax=100, tournamentSize=3, eleitism=true)
 
     val bests = new ArrayBuffer[Double]()
@@ -81,7 +62,7 @@ object App {
         }.start
 
         val (ans,seconds) = time{ solver(problem)(Diagnostic.best(bests)) }
-        val soln = ans.inspect.asInstanceOf[Seq[Float]]
+        val soln = ans
 
         val results =
             s"""|Solved : $testDS
@@ -94,8 +75,7 @@ object App {
                 |""".stripMargin
         println(results)
 
-        //(new ChartWindow( show(testDS,soln.eval(_)) )).startup(Array())
-        (new ChartWindow( show(testDS,flightFunc(soln)(_))) ).startup(Array())
+        (new ChartWindow( show(testDS,soln.eval(_)) )).startup(Array())
     }
 
     def main(args: Array[String]) = optimize()
