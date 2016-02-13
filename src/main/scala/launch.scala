@@ -32,10 +32,13 @@ CGP more ops
 Interpret final CGP results
 apply CGP techniques to RegressionTrees?
 expression simplify function
+
+CGP the PID function
+override fitness to include limited acceleration
 */
 
 object App {
-    def flightFunc(consts: Seq[Double])(sensors: Seq[Double]): Seq[Double] = {
+    def flightFunc(C: Seq[Double])(sensors: Seq[Double]): Seq[Double] = {
         val setpoint = sensors(0)
         val barometer = sensors(1)
         val accelerometer = sensors(2)
@@ -53,29 +56,54 @@ object App {
         val macc = (acceleration+accelerationEst)/2.0
         val velocity = (1.0-K(3))*velocityEst + K(3)*dAlt + K(4)*macc
 
-        val C = consts.map(_.toDouble)
         val error = (setpoint-altitude)
         val integral = oldIntegral + error
-        val throttle = C(0)*error + C(1)*velocity + C(2)*acceleration + C(3)*integral
-
-        //add I term
-        //bring back adaptive termination condition
-        //hand CGP my evolved sensor data
+        val throttle = C(0)*error + C(1)*velocity + C(2)*acceleration + (C(3)/100.0)*integral
 
         Seq(throttle, altitude, velocity, acceleration, integral)
     }
 
     //val challenge = new TelemetryFilter(50.0)
-    val challenge = new AltitudeHold(10.0){
+    val challenge = new AltitudeHold(20.0){
         override val recCount = 4
+        override val range = 100.0
+        override def setpoint(time: Double): Double = {
+            if(time < 5.0) time*2.0
+            else 10.0
+        }
+        override def fitnessOf(results: Seq[(Telemetry,Double)]): Double = {
+            val dist = results.map{
+                case (t,s) => (t.position-s)*(t.position-s)
+            }.sum
+            val fuel = results.map{
+                case (t,s) => t.velocity*t.velocity
+            }.sum
+            Math.sqrt(dist+10*fuel)
+        }
     }
 
     val testDS = new constOptimizer(challenge, 4, flightFunc(_))
 
-    val problem = new RealSeq(testDS, new SelectiveMutate(0.2f, sdv=0.05f), new UniformCrossover(0.25f));
-    val solver  = new GA(popSize=40, genMax=1000, tournamentSize=3, eleitism=true)
+    val problem = new RealSeq(testDS,
+                        new SelectiveMutate(0.2f, sdv=challenge.range/1000.0),
+                        new UniformCrossover(0.25f));
+    val solver  = new GA(popSize=50, genMax=100, tournamentSize=3, eleitism=true)
 
     val bests = new ArrayBuffer[Double]()
+    val dgns = new Diagnostic[problem.SolutionType]{
+        val minImprovementTime = 10
+        var count = 0
+        var lastChange = 0
+        def log(pop: Seq[problem.SolutionType]) {
+            val fits = pop.map(x => x.fitness)
+            val newBest = fits.min
+            count   += 1
+            if(!bests.isEmpty && newBest < bests.last) lastChange = count
+            bests    += newBest
+        }
+        override def finished: Boolean = (count - lastChange > minImprovementTime)
+        override def toString: String = s"Finished after $count generations"
+    }
 
     def optimize(): Unit = {
         new Thread {
@@ -85,7 +113,7 @@ object App {
             }
         }.start
 
-        val (ans,seconds) = time{ solver(problem)(Diagnostic.best(bests)) }
+        val (ans,seconds) = time{ solver(problem)(dgns) }
         val soln = ans
 
         val results =
@@ -94,6 +122,7 @@ object App {
                 |Running: $solver
                 |Seconds: $seconds
                 |Fitness: ${ans.fitness}
+                |status : $dgns
                 |Answer:
                 |$ans
                 |""".stripMargin

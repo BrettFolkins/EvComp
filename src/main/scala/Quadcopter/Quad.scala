@@ -160,6 +160,13 @@ object Quad{
     class AltitudeHold(val runningTime: Double) extends FitnessEvalwShow{
         def setpoint(time: Double): Double = 10.0
 
+        def fitnessOf(results: Seq[(Telemetry,Double)]): Double = {
+            val dist = results.map{
+                case (f,s) => (f.position-s)*(f.position-s)
+            }.sum
+            sqrt(dist)
+        }
+
         val range       = 100.0
         val recCount    = 3
         val inputCount  = 3 + recCount
@@ -172,7 +179,7 @@ object Quad{
         def clean(d: Double): Double =
             if( (d isInfinity) || (d isNaN) ) 0.0 else d
 
-        def calc(func: Seq[Double] => Seq[Double]) : Seq[(Double,Double)] = {
+        def calc(func: Seq[Double] => Seq[Double]) : Seq[(Telemetry,Double)] = {
             var momento   = Seq.fill[Double](recCount)(0.0)
             var setpoints = new ListBuffer[Double]()
             def fly(s: Sensors, t: Double): Double = {
@@ -183,24 +190,21 @@ object Quad{
                 momento = rtn.takeRight(recCount)
                 rtn(0)
             }
-            val positions = flightData(fly(_,_), runningTime).map(_.position)
-            positions.zip(setpoints.toList)
+            val results = flightData(fly(_,_), runningTime)
+            results.zip(setpoints.toList)
         }
 
         def apply(func: Seq[Double] => Seq[Double]): Double = {
             def score(): Double = {
                 val results = calc(func)
-                val dist = results.map{
-                        case (f,s) => (f-s)*(f-s)
-                    }.sum
-                sqrt(dist)
+                fitnessOf(results)
             }
             (1 to numAverage).map(x => score()).sum / numAverage.toDouble
         }
 
         def show(func: Seq[Double] => Seq[Double]): Graph = {
-            val (pos, set) = calc(func).unzip
-            Chart(("Position", pos), ("Setpoint", set))
+            val (res, set) = calc(func).unzip
+            Chart(("Position", res.map(_.position)), ("Setpoint", set))
         }
     }
 }
