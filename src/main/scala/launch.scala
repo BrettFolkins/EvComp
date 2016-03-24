@@ -58,7 +58,8 @@ object App {
 
         val error = (setpoint-altitude)
         val integral = oldIntegral + error
-        val throttle = C(0)*error + C(1)*velocity + C(2)*acceleration + (C(3)/100.0)*integral
+        //val throttle = hold(Seq(error, velocity, acceleration, integral))(0)
+        val throttle = C(0)*error + C(1)*velocity + C(2)*acceleration + C(3)*integral/100
 
         Seq(throttle, altitude, velocity, acceleration, integral)
     }
@@ -75,23 +76,33 @@ object App {
             val dist = results.map{
                 case (t,s) => (t.position-s)*(t.position-s)
             }.sum
-            val fuel = results.map{
+            val vel = results.map{
                 case (t,s) => t.velocity*t.velocity
             }.sum
-            Math.sqrt(dist+10*fuel)
+            val accel = results.map{
+                case (t,s) => t.acceleration*t.acceleration
+            }.sum
+            Math.sqrt(dist+6*vel)
         }
     }
 
     val testDS = new constOptimizer(challenge, 4, flightFunc(_))
-
     val problem = new RealSeq(testDS,
                         new SelectiveMutate(0.2f, sdv=challenge.range/1000.0),
-                        new UniformCrossover(0.25f));
-    val solver  = new GA(popSize=50, genMax=100, tournamentSize=3, eleitism=true)
+                        new UniformCrossover(0.5f));
+
+/*    val testDS = new funcSubstitution(challenge, 4, 1, flightFunc(_))
+    def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
+    val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
+                            rows = 192, mutateChance = 0.10) with NoCrossover
+    //val problem = new RegressionTree(testDS, parsimony=0.5)
+*/
+
+    val solver  = new GA(popSize=100, genMax=1000, tournamentSize=2, eleitism=true)
 
     val bests = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
-        val minImprovementTime = 10
+        val minImprovementTime = 50
         var count = 0
         var lastChange = 0
         def log(pop: Seq[problem.SolutionType]) {
