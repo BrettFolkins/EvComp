@@ -14,23 +14,25 @@ model barometer weirdness
 
 class Quad(
     val dt: Double = 1.0/100.0,  //seconds
-    val ThrustToWeight: Double = 64.34, //Thrust To Weight
-    val accelSDV: Double = 0.271, //feet per second^2
+    val maxThrust: Double = 57.9132, //feet per (second^2) (1.8 * gravity)
+    val accelSDV: Double = 1.0, //feet per (second^2) (0.271/1.0 still/air)
     val baroSDV: Double  = 0.9,   //feet
     val motorDelay:Double= 1.0    //how quickly the motors spool up
     //SDV's Measured from running quad
   ) {
-    val gravity: Double = 32.17; //feet per second^2
+    val gravity: Double = 32.1740; //feet per second^2
     var position: Double = 0.0
     var velocity: Double = 0.0
     var acceleration: Double = 0.0
     var time: Double = 0.0
     var thrust: Double = 0.0
 
+    def toGs(feetPerSecSqrd: Double): Double = feetPerSecSqrd/gravity
+
     def update(throttle: Double): Unit = {
         val motorSetpoint = max(0.0, min(1.0, throttle)) //constrain the throttle to 0-1
         thrust       = (motorDelay)*motorSetpoint + (1.0-motorDelay)*thrust
-        acceleration = thrust*ThrustToWeight - gravity //feet per second^2
+        acceleration = thrust*maxThrust - gravity //feet per second^2
         velocity     = velocity + acceleration*dt //feet per second
         position     = position + velocity*dt //feet
         time        += dt //seconds
@@ -41,7 +43,8 @@ class Quad(
     }
 
     def accelerometer: Double = { //feet per second^2
-        acceleration + gravity + rand.nextGaussian()*accelSDV
+        //acceleration + gravity + rand.nextGaussian()*accelSDV
+        toGs(acceleration)-1.0+rand.nextGaussian()*accelSDV
     }
 
     def barometer: Double = { //feet
@@ -50,7 +53,7 @@ class Quad(
 
     import Quad._
 
-    def telemetry: Telemetry = new Telemetry(position, velocity, acceleration)
+    def telemetry: Telemetry = new Telemetry(position, velocity, toGs(acceleration))
 
     def sensors: Sensors = new Sensors(barometer, accelerometer)
 
@@ -99,7 +102,7 @@ object Quad{
           */
 
         /** throttle curve used to generate data */
-        def throttleAt(time: Double): Double = 0.05*cos(time)+0.5
+        def throttleAt(time: Double): Double = 0.05*cos(time)+(1.0/1.8)
         /** number of components a function needs to output to be interpreted correctly */
         val numberOfTargets = 3
         /** translation from function output seq[Double] to a Telemetry object */
