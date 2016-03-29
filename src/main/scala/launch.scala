@@ -67,7 +67,8 @@ override fitness to include limited acceleration
 */
 
 class RecurrentDataSet(ds: DataSet, recCount: Int) extends FitnessEvalwShow {
-    val outputCount = 2 + recCount
+    val checkedCount = 2
+    val outputCount = checkedCount + recCount
     val inputCount = ds.inputCount
     val range = ds.range
     //val inputData = ds.data.map(_._1)
@@ -87,22 +88,26 @@ class RecurrentDataSet(ds: DataSet, recCount: Int) extends FitnessEvalwShow {
         Seq(altitude, velocity)
     }
 
-
-    println(expectedData.size)
-    expectedData.foreach(x=>println(x.size))
+/*
     var pos = -1
-    println( this( (x:Seq[Double])=>{
+    val pushData = (x:Seq[Double])=>{
         pos = pos+1
         expectedData.map(_(pos))
-    } ) )
-    //println( this( (x:Seq[Double])=>Seq(0.0,0.0) ) )
-
-    println(evaluate( (x:Seq[Double])=>Seq(1.0,1.0) ).take(5))
-
+    }
+    val return0s = (x:Seq[Double])=>{Seq(0.0, 0.0)}
+    //why does printing the exact data not return an error of 0.0?
+    println(s"Error on exact data was ${this(pushData)}")
+    println(s"Error on zeros data was ${this(return0s)}")
+*/
     def evaluate(f: Seq[Double] => Seq[Double]): Seq[Seq[Double]] = {
-        inputData.scanLeft(Seq.fill[Double](outputCount)(0.0)){
+        val iters = inputData.scanLeft(Seq.fill[Double](outputCount)(0.0)){
             case (presult, input) => f(input++presult)
         }.drop(1)
+
+        //from sequence of results at index, to a sequence of all readings
+        val results = (0 until checkedCount).map(i => iters.map(_(i)))
+
+        results
     }
     def apply(f: Seq[Double] => Seq[Double]): Double = {
         def rms(l: Seq[Double], r: Seq[Double]): Double = {
@@ -117,12 +122,14 @@ class RecurrentDataSet(ds: DataSet, recCount: Int) extends FitnessEvalwShow {
     def show(f: Seq[Double] => Seq[Double]): Graph = {
         val results = evaluate(f)
         //println(results)
-        val resultSets: Seq[(String,Seq[Double])] = for(i <- 0 to 2) yield {
+        /*val resultSets: Seq[(String,Seq[Double])] = for(i <- 0 to 2) yield {
             (i.toString, results.map(_(i)) )
-        }
+        }*/
         //val sets = ("Expected", expectedData) +: resultSets
         val expectedLabels = Seq("Expected Altitude", "Expected Velocity")
-        val sets = expectedLabels.zip(expectedData) ++ resultSets
+        val foundLabels = Seq("Found altitude", "Found velocity")
+        val sets = expectedLabels.zip(expectedData) ++
+                   foundLabels.zip(results)
 
         Chart( sets.map(DataSourcePromoter(_)) : _* )
     }
@@ -153,19 +160,40 @@ object App {
         val accelerometer = sensors(1)
         val altitudeEst = sensors(2)
         val velocityEst = sensors(3)
-        val altHOne = sensors(4)
-        val altHTwo = sensors(5)
+        val accelerationEst = sensors(4)
+        val altHOne = sensors(5)
 
         //println("K: "+K)
-
         val K0 = Math.abs(K(0))
         val K1 = Math.abs(K(1))
+        val K2 = Math.abs(K(2))
+        val K3 = Math.abs(K(3))
 
         val altitude = barometer*K0 + altitudeEst*(1.0-K0)
-        val newvelocity = (altitude-altHTwo) / (20.0/1000.0)
-        val velocity = newvelocity//*K1 + velocityEst*(1.0-K1)
 
-        Seq(altitude, velocity, altitudeEst, altHOne)
+        val acceleration = (accelerometer+1.0)*K1 + accelerationEst*(1.0-K1)
+
+        //acceleration is in G's
+        //velocity is in feet per second
+        //acceleration over this time peroid
+
+
+        //centered difference
+        //val newvelocity = (altitude-altHOne) / (20.0/1000.0)
+        //forward difference
+        //val newvelocity = (altitude-altitudeEst) / (10.0/1000.0)
+        //second order forward difference
+        val newvelocity = 50.0*(altHOne - 4.0*altitudeEst + 3.0*altitude)
+        //val velocity = newvelocity*K2 + velocityEst*(1.0-K2)
+
+        val useA = (acceleration + accelerationEst)/2.0
+        val accelVel = newvelocity + K(3)* (useA * 32.17 / 100.0)
+
+        val velocity = K2*velocityEst +
+                       // (1.0-K2)*newvelocity
+                       (1.0-K2) * (accelVel)
+
+        Seq(altitude, velocity, acceleration, altitudeEst)
     }
 
     val challenge = new RecurrentDataSet(
@@ -173,20 +201,20 @@ object App {
                         2)
     //val challenge = new TelemetryFilter(50.0)
 
-    val testDS = new constOptimizer(challenge, /*numConsts*/5, flightFunc(_)){
+    val testDS = new constOptimizer(challenge, /*numConsts*/4, flightFunc(_)){
         override val range = 1.0
     }
     val problem = new RealSeq(testDS,
-                        new GaussMutate(/*0.2f,*/ sdv=0.0001),
+                        new GaussMutate(/*0.2f,*/ sdv=0.001),
                         new UniformCrossover(0.5f));
 
-    val solver  = new GA(popSize=10, genMax=1000, tournamentSize=2, eleitism=true)
+    val solver  = new GA(popSize=50, genMax=100, tournamentSize=3, eleitism=true)
     //val solver  = new GA(popSize=100, genMax=1000, tournamentSize=2, eleitism=true)
     //val solver  = new GA(popSize=2, genMax=5, tournamentSize=2, eleitism=true)
 
     val bests = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
-        val minImprovementTime = 50
+        val minImprovementTime = 10
         var count = 0
         var lastChange = 0
         def log(pop: Seq[problem.SolutionType]) {
@@ -228,7 +256,7 @@ object App {
         (new ChartWindow( show(testDS,soln.eval(_)) )).startup(Array())
     }
 
-    def main(args: Array[String]) = ()//optimize()
+    def main(args: Array[String]) = optimize()
 }
 
 
