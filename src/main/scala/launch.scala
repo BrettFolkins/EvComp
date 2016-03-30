@@ -136,80 +136,57 @@ class RecurrentDataSet(ds: DataSet, recCount: Int) extends FitnessEvalwShow {
 }
 
 object App {
-/*    def flightFunc(K: Seq[Double])(sensors: Seq[Double]): Seq[Double] = {
+/*    def sensorFunc(K: Seq[Double])(sensors: Seq[Double]): Seq[Double] = {
         val barometer = sensors(0)
         val accelerometer = sensors(1)
         val altitudeEst = sensors(2)
         val velocityEst = sensors(3)
         val accelerationEst = sensors(4)
 
-        //println("K: "+K)
+        val C0 = 0.046 // Math.abs(K(0)) //0.046
+        val C1 = 0.02 // Math.abs(K(1))
 
-        val altitude = barometer*K(0) + altitudeEst*(1.0-K(0))
-        val acceleration = (accelerometer+1.0)*K(1) + accelerationEst*(1.0-K(1))
+        val altitude = barometer*C0 + altitudeEst*(1.0-C0)
+        val newvelocity = (altitude-altitudeEst) * 100.0
+        val velocity = newvelocity*C1 + velocityEst*(1.0-C1)
 
-        val dAlt = (barometer-altitudeEst)
-        val macc = (acceleration+accelerationEst)/2.0
-        val velocity = K(2)*velocityEst + K(3)*dAlt + K(4)*macc
+        val acceleration = 0.0
 
         Seq(altitude, velocity, acceleration)
     }*/
 
-    def flightFunc(K: Seq[Double])(sensors: Seq[Double]): Seq[Double] = {
-        val barometer = sensors(0)
-        val accelerometer = sensors(1)
-        val altitudeEst = sensors(2)
-        val velocityEst = sensors(3)
-        val accelerationEst = sensors(4)
-        val altHOne = sensors(5)
+    def flightFunc(K: Seq[Double])(input: Seq[Double]): Seq[Double] = {
+        val setpoint = input(0)
+        val barometer = input(1)
+        val accelerometer = input(2)
+        val altitudeEst = input(3)
+        val velocityEst = input(5)
+        val accelerationEst = input(5)
 
-        //println("K: "+K)
-        val K0 = Math.abs(K(0))
-        val K1 = Math.abs(K(1))
-        val K2 = Math.abs(K(2))
-        val K3 = Math.abs(K(3))
+        val C0 = 0.046 // Math.abs(K(0)) //0.046
+        val C1 = 0.02 // Math.abs(K(1))
 
-        val altitude = barometer*K0 + altitudeEst*(1.0-K0)
+        val altitude = barometer*C0 + altitudeEst*(1.0-C0)
+        val newvelocity = (altitude-altitudeEst) * 100.0
+        val velocity = newvelocity*C1 + velocityEst*(1.0-C1)
 
-        val acceleration = (accelerometer+1.0)*K1 + accelerationEst*(1.0-K1)
+        val acceleration = 0.0
 
-        //with accelerometer velocity input
-        //[-0.04596842091880457, -1.0, -0.9828750829609171, -0.9865007592386262]
-
-        //without
-        //[0.046237595998406975, 0.6115955072818494, 0.9827442732139035, -0.6300188267102338]
-
-
-
-        //acceleration is in G's
-        //velocity is in feet per second
-        //acceleration over this time peroid
-
-
-        //centered difference
-        //val newvelocity = (altitude-altHOne) / (20.0/1000.0)
-        //forward difference
-        val newvelocity = (altitude-altitudeEst) / (10.0/1000.0) //2.39548
-        //second order forward difference
-        //val newvelocity = 50.0*(altHOne - 4.0*altitudeEst + 3.0*altitude) //2.39491
-        //val velocity = newvelocity*K2 + velocityEst*(1.0-K2)
-
-        val useA = (acceleration + accelerationEst)/2.0
-        val accelVel = newvelocity //+ K(3)* (useA * 32.17 / 100.0)
-
-        val velocity = K2*velocityEst +
-                       // (1.0-K2)*newvelocity
-                       (1.0-K2) * (accelVel)
-
-        Seq(altitude, velocity, acceleration, altitudeEst)
+        Seq(throttle, altitude, velocity, acceleration)
     }
 
-    val challenge = new RecurrentDataSet(
+    val pingFlight = new RecurrentDataSet(
                         DataSet.fromFile("resources/pingFlightRecording.csv"),
-                        2)
-    val sim = new TelemetryFilter(16.0)
+                        3)
+    val telemetry = new TelemetryFilter(64.0){
+        override def throttleAt(time: Double): Double =
+            0.05*Math.cos(time/4.0)+(1.0/1.8)
+    }
 
-    val testDS = new constOptimizer(challenge, /*numConsts*/4, flightFunc(_)){
+    val challenge = telemetry
+    val sim = pingFlight
+
+    val testDS = new constOptimizer(challenge, /*numConsts*/3, flightFunc(_)){
         override val range = 1.0
     }
     val problem = new RealSeq(testDS,
@@ -266,6 +243,15 @@ object App {
         val finalFunc = flightFunc(soln.eval(Seq()))(_)
 
         println("simulation score: "+sim(finalFunc(_)))
+        (new ChartWindow( show(sim,finalFunc(_)) )).startup(Array())
+    }
+
+    def demo(): Unit = {
+        val finalFunc = flightFunc(Seq(0.0,0.0,0.0,0.0,0.0,0.0))(_)
+        println("Challenge score: "+challenge(finalFunc(_)))
+        println("sim score: "+sim(finalFunc(_)))
+
+        (new ChartWindow( show(challenge,finalFunc(_)) )).startup(Array())
         (new ChartWindow( show(sim,finalFunc(_)) )).startup(Array())
     }
 
