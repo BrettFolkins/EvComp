@@ -173,6 +173,14 @@ object App {
 
         val acceleration = (accelerometer+1.0)*K1 + accelerationEst*(1.0-K1)
 
+        //with accelerometer velocity input
+        //[-0.04596842091880457, -1.0, -0.9828750829609171, -0.9865007592386262]
+
+        //without
+        //[0.046237595998406975, 0.6115955072818494, 0.9827442732139035, -0.6300188267102338]
+
+
+
         //acceleration is in G's
         //velocity is in feet per second
         //acceleration over this time peroid
@@ -181,13 +189,13 @@ object App {
         //centered difference
         //val newvelocity = (altitude-altHOne) / (20.0/1000.0)
         //forward difference
-        //val newvelocity = (altitude-altitudeEst) / (10.0/1000.0)
+        val newvelocity = (altitude-altitudeEst) / (10.0/1000.0) //2.39548
         //second order forward difference
-        val newvelocity = 50.0*(altHOne - 4.0*altitudeEst + 3.0*altitude)
+        //val newvelocity = 50.0*(altHOne - 4.0*altitudeEst + 3.0*altitude) //2.39491
         //val velocity = newvelocity*K2 + velocityEst*(1.0-K2)
 
         val useA = (acceleration + accelerationEst)/2.0
-        val accelVel = newvelocity + K(3)* (useA * 32.17 / 100.0)
+        val accelVel = newvelocity //+ K(3)* (useA * 32.17 / 100.0)
 
         val velocity = K2*velocityEst +
                        // (1.0-K2)*newvelocity
@@ -199,16 +207,16 @@ object App {
     val challenge = new RecurrentDataSet(
                         DataSet.fromFile("resources/pingFlightRecording.csv"),
                         2)
-    //val challenge = new TelemetryFilter(50.0)
+    val sim = new TelemetryFilter(16.0)
 
     val testDS = new constOptimizer(challenge, /*numConsts*/4, flightFunc(_)){
         override val range = 1.0
     }
     val problem = new RealSeq(testDS,
-                        new GaussMutate(/*0.2f,*/ sdv=0.001),
+                        new GaussMutate(/*0.2f,*/ sdv=0.0001),
                         new UniformCrossover(0.5f));
 
-    val solver  = new GA(popSize=50, genMax=100, tournamentSize=3, eleitism=true)
+    val solver  = new GA(popSize=200, genMax=200, tournamentSize=3, eleitism=true)
     //val solver  = new GA(popSize=100, genMax=1000, tournamentSize=2, eleitism=true)
     //val solver  = new GA(popSize=2, genMax=5, tournamentSize=2, eleitism=true)
 
@@ -254,6 +262,11 @@ object App {
         println(results)
 
         (new ChartWindow( show(testDS,soln.eval(_)) )).startup(Array())
+
+        val finalFunc = flightFunc(soln.eval(Seq()))(_)
+
+        println("simulation score: "+sim(finalFunc(_)))
+        (new ChartWindow( show(sim,finalFunc(_)) )).startup(Array())
     }
 
     def main(args: Array[String]) = optimize()
