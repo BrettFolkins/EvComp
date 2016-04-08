@@ -26,17 +26,27 @@ class Annealing(
             return rand.nextFloat() < prob; // 0 <= nextFloat <= 1
         }
         var sol = p.potential()
+        var lastScore = 0.0
+        var bestSol = sol
+        var bestScore = java.lang.Double.MAX_VALUE
         breakable {
             for(i <- 0 until trials) {
                 val next = sol.mutate()
-                val diff = next.fitness - sol.fitness
+                val nextScore = next.fitness
+                val diff = nextScore - lastScore
                 if(diff < 0 || bypass(diff, i))
                     sol = next
                 ds log Seq(sol)
                 if(ds.finished) break
+
+                lastScore = nextScore
+                if(lastScore < bestScore){
+                    bestScore = lastScore
+                    bestSol = sol
+                }
             }
         }
-        sol
+        bestSol
     }
 
     override def toString() = "Annealing"
