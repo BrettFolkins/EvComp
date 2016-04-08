@@ -7,13 +7,21 @@ import scala.util.control.Breaks._
 
 class Annealing(
     trials: Int,
-    Tmax: Float)
+    Tmax: Float,
+    TempExponent: Double = 1.0)
   extends Optimizer{
     val rand = new Random()
 
+    /**
+     * given the time as a value between 0 (start) and 1 (finish)
+     * return the rate of annealing as a percentage of Tmax
+     */
+    def schedule(time: Float): Float = math.pow(1.0-time, TempExponent).toFloat
+
     def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
         def bypass(d: Double, i: Int): Boolean = {
-            val temp = Tmax * (trials - i).toFloat / trials.toFloat
+            val time = i.toFloat / trials.toFloat
+            val temp = Tmax * schedule(time)
             val prob = Math.exp(-d/temp)
             return rand.nextFloat() < prob; // 0 <= nextFloat <= 1
         }
