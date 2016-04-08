@@ -8,7 +8,8 @@ import scala.util.control.Breaks._
 class Annealing(
     trials: Int,
     Tmax: Float,
-    TempExponent: Double = 1.0)
+    TempExponent: Double = 1.0,
+    InitialSolSearchSize: Int = 20)
   extends Optimizer{
     val rand = new Random()
 
@@ -19,14 +20,19 @@ class Annealing(
     def schedule(time: Float): Float = math.pow(1.0-time, TempExponent).toFloat
 
     def apply(p: Problem)(implicit ds: Diagnostic[p.SolutionType]): (p.SolutionType) = {
+        def pickInitial(): p.SolutionType = {
+            val pop = Seq.fill[p.SolutionType](InitialSolSearchSize)(p.potential())
+            val fitpop = pop.map(x => (x.fitness, x))
+            fitpop.minBy(_._1)._2
+        }
         def bypass(d: Double, i: Int): Boolean = {
             val time = i.toFloat / trials.toFloat
             val temp = Tmax * schedule(time)
             val prob = Math.exp(-d/temp)
             return rand.nextFloat() < prob; // 0 <= nextFloat <= 1
         }
-        var sol = p.potential()
-        var lastScore = 0.0
+        var sol = pickInitial()//p.potential()
+        var lastScore = sol.fitness
         var bestSol = sol
         var bestScore = java.lang.Double.MAX_VALUE
         breakable {
