@@ -1,9 +1,13 @@
 package com.ml
 
+import com.util._
+import com.util.Chart._
+import com.graph._
+
 import scala.util.Random
 import scala.io.Source
 
-abstract class DataSet extends FitnessEval {
+abstract class DataSet extends FitnessEvalwShow {
     val outputCount = 1
     val data: Seq[(Seq[Double],Double)]
     def apply(f: Seq[Double] => Seq[Double]): Double = {
@@ -14,9 +18,23 @@ abstract class DataSet extends FitnessEval {
                 }).sum
         Math.sqrt(ms/(data.size.toDouble))
     }
+    def show(f: Seq[Double] => Seq[Double]): Graph = {
+        val comparison = for((data,target) <- data) yield {
+            val calculated = f(data)(0)
+            (target, calculated)
+        }
+        val sorted = comparison.sortBy(_._1)
+        Chart(("real", sorted.map{_._1}), ("calculated", sorted.map{_._2}))
+    }
 }
 
 object DataSet{
+    def index(key: String, keys: Seq[String]) = {
+        val idx = keys.indexOf(key)
+        if(idx == -1) throw new Exception(s"Couldn't find key $key")
+        idx
+    }
+
     def fromFunc(
       vecLen: Int,
       numVec: Int,
@@ -40,6 +58,27 @@ object DataSet{
                 val nums = line.split(',').map(x => x.toDouble).toSeq
                 (nums.init, nums.last)
             }
+            val range = data.map(x => x._2).max
+            val inputCount = data.map(x => x._1.length).min
+        }
+    }
+
+    def fromCsv(filename: String, selects: Seq[String]) = {
+        val lines = Source.fromFile(filename).getLines()
+        val raw = lines.map{ l =>
+            l.split("\",\"").map{ v =>
+                v.filter(_ != '\"')
+            }
+        }
+        val keys = raw.next
+        val indexes = selects.map { s => index(s, keys) }
+        new DataSet{
+            val data = raw.map{ line =>
+                (
+                    indexes.tail.map{ i => line(i).toDouble },
+                    line(indexes.head).toDouble
+                )
+            }.toSeq
             val range = data.map(x => x._2).max
             val inputCount = data.map(x => x._1.length).min
         }

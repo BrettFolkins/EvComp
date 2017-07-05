@@ -24,21 +24,18 @@ object Chart {
             case fe: FitnessEvalwShow => {
                 fe.show(func)
             }
-            case ds: DataSet => {
-                val correctData = ds.data.map(x => x._2)
-                val foundData = for((data,target) <- ds.data) yield func(data)(0)
-                Chart( ("Correct", correctData.sorted), ("Found", foundData.sorted) )
-            }
             case _ => Chart(("No graph conversion found", Nil))
         }
     }
 
-    class ChartWindow(val dataSets: Seq[DataSource]) extends SimpleSwingApplication{
+    class ChartWindow(val graph: Graph) extends SimpleSwingApplication{
         def top = new MainFrame{
             title = "Optimizer"
-            contents = Component.wrap(Chart(dataSets:_*))
+            contents = Component.wrap(graph)
         }
     }
+    def ChartWindow(dataSets: Seq[DataSource]) =
+        new ChartWindow(Chart(dataSets:_*))
 
     class ArrayDataSource(val getName: String, data: Seq[Double]) extends DataSource {
         def get(X: Double): Double = {

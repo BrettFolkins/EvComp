@@ -63,9 +63,14 @@ object Node{
         new NaryNode(Nil, o._1, o._2, o._3)
 
     def protectedDiv(n: Double, d: Double): Double = if(d != 0.0) n/d else n
+    def protectedLog(x: Double): Double = if(x != 0.0) Math.log(Math.abs(x)) else 0.0
+    def protectedExp(x: Double): Double = if(Math.abs(x) >= 1.0) x else Math.exp(x)
 
     val algebraOps: Seq[Node] = List(((x:Double, y:Double)=>x+y , "+"),
                                      ((x:Double, y:Double)=>x*y , "*"),
                                      ((x:Double, y:Double)=>x-y , "-"),
                                      (protectedDiv(_,_) ,         "/") )
+    val exponentialOps: Seq[Node] = List(
+        (protectedExp(_), "e^"),
+        (protectedLog(_) , "ln") )
 }
