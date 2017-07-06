@@ -51,6 +51,7 @@ object DataSet{
         }
         val inputCount = data.map(x => x._1.length).min
     }
+
     def fromFile(filename: String) = {
         val source = Source.fromFile(filename).getLines().toList
         new DataSet{
@@ -63,22 +64,17 @@ object DataSet{
         }
     }
 
-    def fromCsv(filename: String, selects: Seq[String]) = {
-        val lines = Source.fromFile(filename).getLines()
-        val raw = lines.map{ l =>
-            l.split("\",\"").map{ v =>
-                v.filter(_ != '\"')
-            }
+    def fromCsv(data: CSV, output: String, input: Seq[String]) = {
+        import scala.collection.mutable.ArrayBuffer
+        val dataBuffer = new ArrayBuffer[(Seq[Double],Double)]()
+        data.foreach{ row =>
+            val t = row(output).toDouble
+            val valueBuffer = new ArrayBuffer[Double]()
+            val v = input.foreach { valueBuffer += row(_).toDouble }
+            dataBuffer +=( (valueBuffer.toSeq,t) )
         }
-        val keys = raw.next
-        val indexes = selects.map { s => index(s, keys) }
         new DataSet{
-            val data = raw.map{ line =>
-                (
-                    indexes.tail.map{ i => line(i).toDouble },
-                    line(indexes.head).toDouble
-                )
-            }.toSeq
+            val data = dataBuffer.toSeq
             val range = data.map(x => x._2).max
             val inputCount = data.map(x => x._1.length).min
         }

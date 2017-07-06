@@ -13,6 +13,7 @@ import com.graph._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
+import scala.io._
 import swing._
 import java.util.Calendar
 import java.io._
@@ -21,42 +22,19 @@ import java.awt.image.BufferedImage
 import java.time._
 import java.time.temporal._
 
-// clean up algebra and tree based solution creation?
-// write a tree simplify function
-
-/*
-real time based running limits
-CGP more ops
-    change operator mutation
-    change children mutation
-    noop crossover
-    transplant crossover
-    vertical shift
-Interpret final CGP results
-virtual velometer
-refactor quadcopter simulator
-apply CGP techniques to RegressionTrees?
-
-add some exponential like nodes to the algebra
-try a simple loss-adjusted-interest rate calculation
-try implementing a neural net adjuster
-try having it only pick out the top N individuals
-*/
-
 object App {
-    //val testDS = DataSet.fromFunc(4, 50, 10.0){ x => x(0)*x(0)*x(0) - x(1)/x(2) - 3*x(3) }
-    //val testDS = DataSet.fromFunc(1, 100, 2*Math.PI){ x => Math.sin(x(0)) }
-    //val testDS = DataSet.fromFile("resources/GPProjectData.csv")
-    //val testDS = DataSet.fromFile("resources/propData")
-    //val testDS = DataSet.fromFunc(3, 500, 10.0){ x => x.map(y => y*y).sum }
+    def prosperDataSet() = {
+        val data = CSV.fromLines(Source.fromFile("data.csv").getLines().toSeq)
+            .filter { row =>
+                val e = row("effective_rate").toDouble
+                e <= 0.1 && e >= -0.5
+            }
 
-
-
-
-    val testDS = DataSet.fromCsv("data.csv",
-            Seq("estimated_return",//"effective_rate",
-
-                //"estimated_loss_rate",
+        DataSet.fromCsv(data,
+            "effective_rate",
+            Seq("estimated_return","borrower_rate","prosper_score","bankcard_utilization"
+/*                "estimated_return",
+                "estimated_loss_rate",
                 "lender_yield","effective_yield",
                 "borrower_rate","borrower_apr",
                 "listing_monthly_payment","prosper_score","listing_category_id","stated_monthly_income",
@@ -65,16 +43,24 @@ object App {
                 "first_recorded_credit_line","credit_lines_last7_years","inquiries_last6_months","amount_delinquent",
                 "current_credit_lines","open_credit_lines","bankcard_utilization","total_open_revolving_accounts","revolving_balance",
                 "real_estate_payment","revolving_available_percent","total_inquiries","total_trade_items","satisfactory_accounts",
-                "is_homeowner","investment_typeid"
+                "is_homeowner","investment_typeid",
+                "amount_borrowed","principal_balance","service_fees_paid","principal_paid","interest_paid","late_fees_paid",
+                "debt_sale_proceeds_received"*/
+                //,"origination_date","next_payment_due_date"
             )
         )
+    }
 
+    //val testDS = prosperDataSet()
+    val testDS = DataSet.fromFunc(3, 200, 1.0){ case Seq(a,b,c) =>
+        a*a+b/c
+    }
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
     val problem = new CGP(
                         testDS,
                         ((Node.algebraOps) :+new Constant(()=>randomInRange) ),
-                        rows = 2048,
+                        rows = 512,
                         mutateChance = 0.02) with NoCrossover
 
     //val problem = RegressionTree(testDS)
@@ -94,7 +80,7 @@ object App {
             best    += newBest
         }
 
-        val endTime = Instant.now().plus(2, ChronoUnit.HOURS)
+        val endTime = Instant.now().plus(10, ChronoUnit.SECONDS)
         override def finished: Boolean = {
             //false//(count - lastChange > 1000)
             Instant.now().isAfter(endTime)

@@ -50,9 +50,9 @@ object CSV {
      * any text after a '#' on each line is ignored
      * lines that are empty or don't contain any quotes are ignored
      */
-    def fromString(data: String): CSV = {
+    def fromString(data: String): CSV = fromLines(data.split("\n"))
+    def fromLines(data: Seq[String]): CSV = {
         val raw = data
-            .split("\n")
             .flatMap { l => rejectComments.findPrefixOf(l) }
             .map { l =>
                 quotedCSV.findAllMatchIn(l)
