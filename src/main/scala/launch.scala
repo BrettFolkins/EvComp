@@ -57,15 +57,15 @@ object App {
     }
 
     def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
-    val problem = new CGP(
+/*    val problem = new CGP(
                         testDS,
                         ((Node.algebraOps) :+new Constant(()=>randomInRange) ),
                         rows = 512,
                         mutateChance = 0.02) with NoCrossover
+*/
+    val problem = new RegressionTree(testDS)
 
-    //val problem = RegressionTree(testDS)
-
-    val solver  = new GA(popSize=32, genMax=1000000000, tournamentSize=2, eleitism=true)
+    val solver = new GA(popSize=32, genMax=1000000000, tournamentSize=2, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
@@ -96,10 +96,6 @@ object App {
         }.start
 
         val (ans,seconds) = time{ solver(problem)(dgns) }
-        val soln = ans
-        //val soln = ans.inspect.asInstanceOf[ExpNode]
-        println(soln)
-
 
         val results =
             s"""|Solved : $testDS
@@ -113,7 +109,7 @@ object App {
                 |""".stripMargin
         println(results)
 
-        new ChartWindow(Chart.show(testDS, soln.eval(_))).startup(Array())
+        new ChartWindow(Chart.show(testDS, ans.eval(_))).startup(Array())
 
 /*        val handle = s"./results/${Calendar.getInstance().getTimeInMillis()}/"
         (new File(handle)).mkdir()
