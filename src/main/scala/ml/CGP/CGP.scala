@@ -5,7 +5,7 @@ import com.ml._
 
 class CGP(
   fit: FitnessEval,
-  nodeset: Seq[Node],
+  nodeset: Seq[NodeGen],
   rows: Int,
   cols: Int = 1,
   depth: Int = Int.MaxValue,
@@ -26,7 +26,7 @@ class CGP(
             if(sel < fit.inputCount) In(sel)
             else Nd(sel - fit.inputCount + (row-dep)*cols)
         }
-        nodeset(rand.nextInt(nodeset.size)).cons(()=>randInput())
+        nodeset(rand.nextInt(nodeset.size)).generate(()=>randInput())
     }
 
     class Grid(val nodes: Seq[Node]) extends Solution[Grid] {

@@ -56,36 +56,28 @@ object App {
         a*a+b/c
     }
 
-    def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
-/*    val problem = new CGP(
-                        testDS,
-                        ((Node.algebraOps) :+new Constant(()=>randomInRange) ),
-                        rows = 512,
-                        mutateChance = 0.02) with NoCrossover
-*/
-    val problem = new RegressionTree(testDS)
+    val problem = new CGP(testDS,
+        Node.algebra(testDS.range),
+        rows = 512,
+        mutateChance = 0.02) with NoCrossover
+
+    //val problem = new RegressionTree(testDS)
 
     val solver = new GA(popSize=32, genMax=1000000000, tournamentSize=2, eleitism=true)
 
     val best = new ArrayBuffer[Double]()
     val dgns = new Diagnostic[problem.SolutionType]{
         var count = 0
-        var lastChange = 0
         def log(pop: Seq[problem.SolutionType]) {
-            time()
             val fits = pop.map(x => x.fitness)
             val newBest = fits.min
             count   += 1
-            if(!best.isEmpty && newBest < best.last) lastChange = count
             best    += newBest
         }
-
         val endTime = Instant.now().plus(10, ChronoUnit.SECONDS)
         override def finished: Boolean = {
-            //false//(count - lastChange > 1000)
             Instant.now().isAfter(endTime)
         }
-
         override def toString: String = s"Finished after $count generations"
     }
 

@@ -153,8 +153,7 @@ object Experiment {
         }
     }
 
-    def randomInRange: Double = (2.0*rand.nextDouble - 1.0)*testDS.range
-    val problem = new CGP(testDS, Node.algebraOps:+new Constant(()=>randomInRange),
+    val problem = new CGP(testDS, Node.algebra(testDS.range),
                             rows = 192, mutateChance = 0.10) with NoCrossover
 
     val solver  = new GA(popSize=50, genMax=100000, tournamentSize=5, eleitism=true)
