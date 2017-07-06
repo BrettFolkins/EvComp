@@ -78,7 +78,7 @@ object Experiment {
             Chart( (("Setpoint", set) +: chartList).map(DataSourcePromoter(_)):_* )
         }
     }*/
-
+/*
     val testDS = new FitnessEvalwShow{
         val range = 100.0
         val recCount    = 3
@@ -208,6 +208,6 @@ object Experiment {
         }
     }
 
-    def main(args: Array[String]) = optimize()
+    def main(args: Array[String]) = optimize()*/
 }
 

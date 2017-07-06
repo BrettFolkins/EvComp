@@ -8,5 +8,9 @@ abstract class FitnessEval{
     //the size of expected output vectors
     val outputCount: Int
     //returns fitness of given function
-    def apply(func: Seq[Double] => Seq[Double]) : Double
+    type Vector = Seq[Double]
+    def batch(func: Seq[Vector] => Seq[Vector]) : Double
+    def apply(func: Vector => Vector) : Double = {
+        batch { _.map{ input => func(input) } }
+    }
 }

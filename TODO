@@ -2,8 +2,6 @@ CGP mini batching
 CGP solution grid shift
 serialize and deserialize models
 add tests and refactor
-fix that awkward cannonical node thing
-clean up regression tree code to work more like CGP
 figure out what is bounding CPU usage
 input normalization/categorical breakout system
 implement a neural net Solution instance

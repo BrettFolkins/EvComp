@@ -27,14 +27,13 @@ object App {
         val data = CSV.fromLines(Source.fromFile("data.csv").getLines().toSeq)
             .filter { row =>
                 val e = row("effective_rate").toDouble
-                e <= 0.1 && e >= -0.5
+                e <= 0.1 && e >= 0.0
             }
 
         DataSet.fromCsv(data,
             "effective_rate",
-            Seq("estimated_return","borrower_rate","prosper_score","bankcard_utilization"
-/*                "estimated_return",
-                "estimated_loss_rate",
+            Seq(
+                "estimated_return", "estimated_loss_rate",
                 "lender_yield","effective_yield",
                 "borrower_rate","borrower_apr",
                 "listing_monthly_payment","prosper_score","listing_category_id","stated_monthly_income",
@@ -43,22 +42,21 @@ object App {
                 "first_recorded_credit_line","credit_lines_last7_years","inquiries_last6_months","amount_delinquent",
                 "current_credit_lines","open_credit_lines","bankcard_utilization","total_open_revolving_accounts","revolving_balance",
                 "real_estate_payment","revolving_available_percent","total_inquiries","total_trade_items","satisfactory_accounts",
-                "is_homeowner","investment_typeid",
-                "amount_borrowed","principal_balance","service_fees_paid","principal_paid","interest_paid","late_fees_paid",
-                "debt_sale_proceeds_received"*/
-                //,"origination_date","next_payment_due_date"
+                "is_homeowner","investment_typeid"
+                //"amount_borrowed","principal_balance","service_fees_paid","principal_paid","interest_paid","late_fees_paid","debt_sale_proceeds_received"
+                //"origination_date","next_payment_due_date"
             )
         )
     }
 
     //val testDS = prosperDataSet()
     val testDS = DataSet.fromFunc(3, 200, 1.0){ case Seq(a,b,c) =>
-        a*a+b/c
+        a*a*a+b/c-a
     }
 
     val problem = new CGP(testDS,
         Node.algebra(testDS.range),
-        rows = 512,
+        rows = 2048,
         mutateChance = 0.02) with NoCrossover
 
     //val problem = new RegressionTree(testDS)

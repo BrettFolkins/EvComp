@@ -9,14 +9,17 @@ import scala.io.Source
 
 abstract class DataSet extends FitnessEvalwShow {
     val outputCount = 1
-    val data: Seq[(Seq[Double],Double)]
-    def apply(f: Seq[Double] => Seq[Double]): Double = {
-        val ms = (for((data,target) <- data) yield {
-                    val ans  = f(data)(0)
-                    val diff = target - ans
-                    diff*diff
-                }).sum
-        Math.sqrt(ms/(data.size.toDouble))
+    val data: Seq[(Vector,Double)]
+    def batch(f: Seq[Vector] => Seq[Vector]): Double = {
+        val input = data.map{ _._1 }
+        val output = f(input)
+        val expected = data.map{ _._2 }
+        Math.sqrt(
+            output.zip(expected).map{ case (out, exp) =>
+                val err = exp-out(0)
+                err*err
+            }.sum
+        )
     }
     def show(f: Seq[Double] => Seq[Double]): Graph = {
         val comparison = for((data,target) <- data) yield {

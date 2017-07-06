@@ -138,11 +138,3 @@ class CGP(
 trait NoCrossover extends CGP{
     override def crossover(a: Grid, b: Grid): (Grid, Grid) = (a,b)
 }
-
-class TestFit extends FitnessEval{
-    val range: Double = 10
-    val inputCount: Int = 2
-    val outputCount: Int = 2
-    def apply(func: Seq[Double] => Seq[Double]) : Double = 0
-}
-
