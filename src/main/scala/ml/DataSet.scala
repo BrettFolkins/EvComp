@@ -7,10 +7,12 @@ import com.graph._
 import scala.util.Random
 import scala.io.Source
 
+import com.ml.FitnessEval.Vect
+
 abstract class DataSet extends FitnessEvalwShow {
     val outputCount = 1
-    val data: Seq[(Vector,Double)]
-    def batch(f: Seq[Vector] => Seq[Vector]): Double = {
+    val data: Seq[(Vect,Double)]
+    def batch(f: Seq[Vect] => Seq[Vect]): Double = {
         val input = data.map{ _._1 }
         val output = f(input)
         val expected = data.map{ _._2 }

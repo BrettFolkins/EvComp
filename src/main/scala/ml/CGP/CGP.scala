@@ -2,6 +2,7 @@ package com.ml.CGP
 
 import com.util.Entropy.rand
 import com.ml._
+import com.ml.FitnessEval.Vect
 
 class CGP(
   fit: FitnessEval,
@@ -32,9 +33,9 @@ class CGP(
     class Grid(val nodes: Seq[Node]) extends Solution[Grid] {
         val inspect = nodes
 
-        lazy val fitness: Double = fit(eval(_))
+/*        lazy val fitness: Double = fit(eval(_))
 
-        def eval(input: Seq[Double]): Seq[Double] = {
+        def eval(input: Vect): Vect = {
             def get(n: Input): Double = n match {
                 case In(i) => input(i)
                 case Nd(i) => evalNode(i)
@@ -42,7 +43,21 @@ class CGP(
             def evalNode(i: Int): Double = nodes(i).calc(get)
 
             (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
+        }*/
+
+        lazy val fitness: Double = fit(eval(_))//fit.batch(batch(_))
+
+        def eval(input: Vect): Vect = batch(List(input))(0)
+        def batch(input: Seq[Vect]): Seq[Vect] = {
+            def get(n: Input): Seq[Double] = n match {
+                case In(i) => input.map{ c => c(i) }
+                case Nd(i) => evalNode(i)
+            }
+            def evalNode(i: Int): Seq[Double] = nodes(i).calc(get)
+
+            (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
         }
+
 
         def mark(): Seq[Boolean] = {
             val cache = Array.fill[Boolean](nodes.size)(false)
