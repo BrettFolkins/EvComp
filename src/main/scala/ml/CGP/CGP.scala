@@ -45,12 +45,17 @@ class CGP(
             (nodes.size-fit.outputCount until nodes.size).map(evalNode(_))
         }*/
 
-        lazy val fitness: Double = fit(eval(_))//fit.batch(batch(_))
+        lazy val fitness: Double = fit.batch(batch(_))
 
         def eval(input: Vect): Vect = batch(List(input))(0)
         def batch(input: Seq[Vect]): Seq[Vect] = {
+            val inputLineLen = input(0).size
+            val inputLines = (0 until inputLineLen).map{
+                i => input.map{ c => c(i) }
+            }
+
             def get(n: Input): Seq[Double] = n match {
-                case In(i) => input.map{ c => c(i) }
+                case In(i) => inputLines(i)
                 case Nd(i) => evalNode(i)
             }
             def evalNode(i: Int): Seq[Double] = nodes(i).calc(get)

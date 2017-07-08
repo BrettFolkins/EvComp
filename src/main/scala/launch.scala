@@ -50,15 +50,14 @@ object App {
     }
 
     //val testDS = prosperDataSet()
-    val testDS = DataSet.fromFunc(3, 200, 1.0){ case Seq(a,b,c) =>
-        a*a*a+b/c-a
+    val testDS = DataSet.fromFunc(3, 1000, 1.0){ case Seq(a,b,c) =>
+        a*a*a+b/c-a*c
     }
 
     val problem = new CGP(testDS,
         Node.algebra(testDS.range),
-        rows = 2048,
+        rows = 1024,
         mutateChance = 0.02) with NoCrossover
-
     //val problem = new RegressionTree(testDS)
 
     val solver = new GA(popSize=32, genMax=1000000000, tournamentSize=2, eleitism=true)

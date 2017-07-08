@@ -1,0 +1,9 @@
+CGP mini batching
+CGP solution grid shift
+serialize and deserialize models
+add tests and refactor
+figure out what is bounding CPU usage
+input normalization/categorical breakout system
+implement a neural net Solution instance
+try a simple loss-adjusted-interest rate calculation
+try extending CGP node directly
