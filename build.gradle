@@ -1,0 +1,37 @@
+apply plugin: 'scala'
+
+repositories {
+    mavenCentral()
+    flatDir {
+       dirs 'lib'
+   }
+}
+
+dependencies {
+    compile name: 'graph'
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.12.2'
+    compile group: 'org.scala-lang.modules', name: 'scala-swing_2.12', version: '2.0.0'
+    compile group: 'org.scalactic', name: 'scalactic_2.12', version: '3.0.3'
+
+    testCompile group: 'org.scalatest', name: 'scalatest_2.12', version: '3.0.3'
+    testCompile group: 'org.scalacheck', name: 'scalacheck_2.12', version: '1.13.5'
+}
+
+task run(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.App'
+}
+
+task scalaTest(dependsOn: testClasses, type: JavaExec) {
+    main = 'org.scalatest.tools.Runner'
+    args = ['-R', 'build/classes/test', '-o']
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+task scalaCheck(dependsOn: testClasses, type: JavaExec) {
+    main = 'com.ScalaCheckRunner'
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+test.dependsOn(scalaTest)
+test.dependsOn(scalaCheck)

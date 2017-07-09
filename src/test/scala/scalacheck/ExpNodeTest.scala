@@ -1,3 +1,5 @@
+package com.scalacheck
+
 import org.scalacheck._
 
 import com.ml.expTree._
