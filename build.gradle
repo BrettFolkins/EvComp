@@ -1,4 +1,7 @@
-apply plugin: 'scala'
+plugins {
+    id 'me.champeau.gradle.jmh' version '0.4.3'
+    id 'scala'
+}
 
 repositories {
     mavenCentral()
@@ -35,3 +38,12 @@ task scalaCheck(dependsOn: testClasses, type: JavaExec) {
 
 test.dependsOn(scalaTest)
 test.dependsOn(scalaCheck)
+
+jmh {
+   iterations = 2
+   batchSize = 1
+   fork = 1
+   warmupBatchSize = batchSize
+   warmupIterations = iterations
+   warmupForks = fork
+}
