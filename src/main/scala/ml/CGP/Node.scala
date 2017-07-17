@@ -46,6 +46,15 @@ class NaryNode(
 
 trait NodeGen{
     def generate(arg: () => Input): Node
+    /**
+     * build a node, giving it inputs sequentially from `inputs`
+     * the number of inputs must be >= the number the node will request, and
+     *   extra inputs will be ignored.
+     */
+    def generate(inputs: Seq[Input]): Node = {
+        val it = inputs.iterator
+        generate( () => it.next )
+    }
 }
 
 object Node{

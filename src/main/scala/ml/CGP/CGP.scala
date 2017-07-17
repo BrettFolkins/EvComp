@@ -37,7 +37,10 @@ class CGP(
         def eval(input: Seq[Double]): Seq[Double] = {
             def get(n: Input): Double = n match {
                 case In(i) => input(i)
-                case Nd(i) => evalNode(i)
+                case Nd(i) => {
+                    //println("Evaluting node "+i)
+                    evalNode(i)
+                }
             }
             def evalNode(i: Int): Double = nodes(i).calc(get)
 
