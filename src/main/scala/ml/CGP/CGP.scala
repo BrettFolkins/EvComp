@@ -106,10 +106,10 @@ class CGP(
         override def toString(): String = showEquation
     }
 
-    def potential(): Grid = new Grid( (0 until rows*cols) map (randomNode(_)) )
+    def potential(): Grid = new Grid( Array.range(0,rows*cols) map (randomNode(_)) )
 
     def mutate(o: Grid): Grid =
-        replaceNodes(()=>rand.nextDouble<=mutateChance)(o)
+        replaceNodes(()=>rand.nextDouble<=mutateChance, o)
 
     def crossover(a: Grid, b: Grid): (Grid, Grid) = {
         val (l,r) = {
@@ -130,7 +130,7 @@ class CGP(
         new Grid(o.nodes.updated(index, randomNode(index)))
     }
 
-    def replaceNodes(c:()=>Boolean)(o: Grid): Grid = {
+    def replaceNodes(c:()=>Boolean, o: Grid): Grid = {
         new Grid(o.nodes.zipWithIndex.map{ case (n, i) =>
             if(c()) randomNode(i)
             else n

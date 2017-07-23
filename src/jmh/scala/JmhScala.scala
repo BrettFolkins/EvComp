@@ -6,10 +6,11 @@ import org.openjdk.jmh.annotations._
 import com.ml._
 import com.ml.CGP._
 
-@State(Scope.Benchmark)
+@State(Scope.Thread)
 class JmhScala {
     val inputs = (1 to 10).map{_.toDouble}
-    val gridSize = 16
+    val gridSize = 1024
+    val testTreeDepth = 16
 
     val CGP = new CGP(
         new FitnessEval {
@@ -22,40 +23,31 @@ class JmhScala {
         Node.algebra(1.0),
         gridSize)
 
-    val plusGrid = {
-        val plusGen = Node.algebraOps(0)
-        val constGen = Node.constantInRange(1.0)
-        new CGP.Grid(
-            //510 plus nodes pointing to their own index -1, -2
-            //2 constants at the front
-            Array(constGen.generate(Nil)) ++
-            (1 to gridSize).map{ i =>
-                plusGen.generate(() => Nd(i-1))
-            }
-        )
-    }
+    val nativeTree = CGP.potential()
 
-    val plusGridVector = {
-        val plusGen = Node.algebraOps(0)
-        val constGen = Node.constantInRange(1.0)
-        new CGP.Grid(
-            (Vector(constGen.generate(Nil)) ++
-            (1 to gridSize).map{ i =>
-                plusGen.generate(() => Nd(i-1))
-            }).toArray.toSeq
-        )
-    }
+    val plusGen = Node.algebraOps(0)
+    val constGen = Node.constantInRange(1.0)
+    val fullPlusGrid =
+        (0 until gridSize-testTreeDepth).map { _ => constGen.generate(Nil) } ++
+        (gridSize-testTreeDepth until gridSize).map { i =>
+            plusGen.generate(() => Nd(i-1))
+        }
 
+    val arrayGrid = new CGP.Grid(Array() ++ fullPlusGrid)
+    val vectorGrid = new CGP.Grid(Vector() ++ fullPlusGrid)
+
+    //12517.025 ± 181.752
     @Benchmark def randomCgpEvalute() = {
-        CGP.potential().eval(inputs)
+        val tree = CGP.potential()
+        (tree.eval(inputs), tree.mutate())
     }
 
-    @Benchmark def fullPlusTree() = {
-        plusGrid.eval(inputs)
+    @Benchmark def arrayTree() = {
+        (arrayGrid.eval(inputs), arrayGrid.mutate())
     }
 
-    @Benchmark def fullPlusTreeVector() = {
-        plusGridVector.eval(inputs)
+    @Benchmark def vectorTree() = {
+        (vectorGrid.eval(inputs), vectorGrid.mutate())
     }
 }
 

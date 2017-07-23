@@ -40,7 +40,7 @@ test.dependsOn(scalaTest)
 test.dependsOn(scalaCheck)
 
 jmh {
-   iterations = 2
+   iterations = 10
    batchSize = 1
    fork = 1
    warmupBatchSize = batchSize
